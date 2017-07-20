@@ -308,3 +308,210 @@ int main()
 	printf("%02d:%02d:%02d\n", dif / 3600, (dif % 3600) / 60, dif % 60);
 }
 #endif // 0
+
+// 워크샵
+// 문제 1
+#if 0
+int Max_Calc(int a, int b);
+
+int main(void)
+{
+	//함수작성
+	int a, b;
+	scanf("%d%d", &a, &b);
+	printf("%d", Max_Calc(a, b));
+
+	return 0;
+}
+
+int Max_Calc(int a, int b)
+{
+	//함수작성
+	if (a > b) return a;
+	else return b;
+}
+#endif // 0
+
+// 문제 2
+#if 0
+void Num_Comp(int a, int b);
+
+int main(void)
+{
+	//함수작성
+	int a, b;
+	scanf("%d%d", &a, &b);
+	Num_Comp(a, b);
+	return 0;
+}
+
+void Num_Comp(int a, int b)
+{
+	//함수작성
+	if (a > b) printf("%d > %d", a, b);
+	else if (a < b) printf("%d < %d", a, b);
+	else printf("%d == %d", a, b);
+}
+#endif // 0
+
+//문제 3
+#if 0
+int Num_Count(int num);
+
+int main(void)
+{
+	//함수작성
+	int num;
+	scanf("%d", &num);
+	printf("%d", Num_Count(num));
+	return 0;
+}
+
+int Num_Count(int num)
+{
+	//함수작성
+	if (num <= 0) return 0;
+	else if (num / 10 == 0) return 1;
+	else if (num / 100 == 0) return 2;
+	else if (num / 1000 == 0) return 3;
+	else return 3;
+
+
+}
+#endif // 0
+
+//문제 4
+#if 0
+int Abs_Calc(int num);
+
+int main(void)
+{
+	//함수작성
+	int num;
+	scanf("%d", &num);
+	printf("%d", Abs_Calc(num));
+	return 0;
+}
+
+int Abs_Calc(int num)
+{
+	//함수작성
+	if (num >= 0) return num;
+	else return -num;
+}
+#endif // 0
+
+//문제 5
+#if 0
+char Multiple_Calc(int num);
+
+int main(void)
+{
+	//함수작성
+	int num;
+	scanf("%d", &num);
+	printf("%c", Multiple_Calc(num));
+	return 0;
+}
+
+char Multiple_Calc(int num)
+{
+	//함수작성
+	int a, b;
+	a = num % 3;
+	b = num % 5;
+	if (a + b == 0) return 'O';
+	else return 'X';
+}
+#endif // 0
+
+//문제 6
+#if 0
+int Num_Calc(int x, int y, char op);
+
+int main(void)
+{
+	//함수작성
+	int x, y;
+	char op;
+	scanf("%d%d %c", &x, &y, &op);
+	printf("%d\n", Num_Calc(x, y, op));
+	return 0;
+}
+
+int Num_Calc(int x, int y, char op)
+{
+	//함수작성
+	if (op == '+') return x + y;
+	else if (op == '-') return x - y;
+	else if (op == '/') return x / y;
+	else if (op == '%') return x%y;
+	else if (op == '*') return x*y;
+}
+#endif // 0
+
+//문제 7
+#if 0
+char Weight_Check(int weight);
+
+int main(void)
+{
+	//함수작성
+	int weight;
+	scanf("%d", &weight);
+	if (Weight_Check(weight) == 'X') printf("error\n");
+	else printf("%c\n", Weight_Check(weight));
+	return 0;
+}
+
+char Weight_Check(int weight)
+{
+	//함수작성
+	if (weight < 0 || weight>200) return 'X';
+	switch (weight / 10)
+	{
+	case 6: return 'M'; break;
+	case 5: return 'L'; break;
+	case 4:
+	case 3:
+	case 2:
+	case 1:
+	case 0: return 'F'; break;
+	default: return 'H';
+	}
+}
+#endif // 0
+
+//문제 8
+#if 0
+int main()
+{
+	/*int a = 0, b = 3, c;
+	c = !(a == b); printf("%d", c);
+	c = a = b; printf("%d", c);
+	c = !a++; printf("%d", c);
+	c = (b % 2 == 0); printf("%d", c);
+	return 0;*/
+
+	/*int a, b, c;
+	a=(b=0,c=b++,c+1); printf("%d", a);
+	a = b = 0, c = b++, c + 1; printf("%d", a);*/
+
+	/*int a;
+	scanf("%d", &a);
+	printf("%s\n", (a % 2 == 0) ? ("짝수") : ("홀수"));*/
+}
+#endif // 0
+
+//void main()
+//{
+//	int a = 3;
+//	printf("%d",++++a);
+//}
+
+void main()
+{
+	int a = 0;
+	!a;
+	printf("%d", !a++);
+}
