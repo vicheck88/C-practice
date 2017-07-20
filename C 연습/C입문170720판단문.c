@@ -286,16 +286,25 @@ void main()
 }
 #endif // 0
 
+//번외 문제
+#if 0
 int main()
 {
 	int h1, m1, s1;
 	int h2, m2, s2;
-	int sec1, sec2,dif;
+	int sec1, sec2, dif;
 	scanf("%d:%d:%d", &h1, &m1, &s1);
 	scanf("%d:%d:%d", &h2, &m2, &s2);
-	if (h2 < h1) h2 += 24;
+
+	if (h2 <= h1) h2 += 24;
+	else if (h1 == h2 && m2 <= m1) h2 += 24;
+	else if (h1 == h2 && m2 == m1 && s2 <= s1) h2 += 24;
+
+
 	sec1 = h1 * 3600 + m1 * 60 + s1;
 	sec2 = h2 * 3600 + m2 * 60 + s2;
+
 	dif = sec2 - sec1;
 	printf("%02d:%02d:%02d\n", dif / 3600, (dif % 3600) / 60, dif % 60);
 }
+#endif // 0
