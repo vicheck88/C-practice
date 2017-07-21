@@ -352,30 +352,31 @@ void main()
 #if 0
 void main()
 {
-	int i, j;
-	for (i = 0; i < 10; i++) printf("*");
+	int i, j, n;
+	scanf("%d", &n);
+	for (i = 0; i < 2*n; i++) printf("*");
 	printf("\n");
-	for (i = 1; i < 5; i++)
+	for (i = 1; i < n; i++)
 	{
 		printf("*");
 		for (j = 0; j < i - 1; j++) printf(" ");
 		printf("*");
-		for (j = 8 - 2 * i; j > 0; j--) printf(" ");
+		for (j = (2*n-2) - 2 * i; j > 0; j--) printf(" ");
 		printf("*");
 		for (j = 0; j < i - 1; j++) printf(" ");
 		printf("*\n");
 	}
-	for (i = 4; i >= 1; i--)
+	for (i = n-1; i >= 1; i--)
 	{
 		printf("*");
 		for (j = 0; j < i - 1; j++) printf(" ");
 		printf("*");
-		for (j = 8 - 2 * i; j > 0; j--) printf(" ");
+		for (j = (2 * n - 2) - 2 * i; j > 0; j--) printf(" ");
 		printf("*");
 		for (j = 0; j < i - 1; j++) printf(" ");
 		printf("*\n");
 	}
-	for (i = 0; i < 10; i++) printf("*");
+	for (i = 0; i < 2*n; i++) printf("*");
 	printf("\n");
 }
 #endif // 0
