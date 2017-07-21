@@ -502,16 +502,3 @@ int main()
 	printf("%s\n", (a % 2 == 0) ? ("Â¦¼ö") : ("È¦¼ö"));*/
 }
 #endif // 0
-
-//void main()
-//{
-//	int a = 3;
-//	printf("%d",++++a);
-//}
-
-void main()
-{
-	int a = 0;
-	!a;
-	printf("%d", !a++);
-}
