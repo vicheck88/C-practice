@@ -218,19 +218,18 @@ void main()
 
 //워크샵 5번
 
-#if 0
+#if 1
 void main()
 {
 	int i, j, k, n;
-	int ans[3], ans_rev[3];
+	int ans[3];
 	int cnt = 0;
 	int guess[3];
-	int check_strike = 1, check_ball = 0, check;
 	int strike = 0, ball = 0;
 	int tmp;
 	int sum = 1;
 
-	srand((unsigned int)time(0));
+	//srand((unsigned int)time(0));
 
 	while (cnt < 3)
 	{
@@ -255,29 +254,25 @@ void main()
 
 		for (j = 0; j < 3; j++)
 		{
-			check_strike *= (ans[j] == guess[j]);
-			if (check_strike == 0)
+			strike += (ans[j] == guess[j]);
+			if (strike == 0)
 			{
 				for (k = 0; k < 3; k++)
 				{
-					if (ans[j] == guess[k]) check_ball++;
+					if (ans[j] == guess[k]) ball++;
 				}
 			}
 		}
 
-		if (check_strike) strike++;
-		else if (check_ball == 3) ball++;
-		else check = 1;
-
-		if (check == 1)
+		if (strike == 3)
 		{
 			printf("정답\n");
 			break;
 		}
 
 		else printf("%d strike %d ball\n", strike, ball);
-		check_ball = 0;
-		check_strike = 1;
+		ball = 0;
+		strike = 0;
 	}
 }
 #endif // 0
