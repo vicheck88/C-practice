@@ -218,7 +218,7 @@ void main()
 
 //¿öÅ©¼¥ 5¹ø
 
-#if 1
+#if 0
 void main()
 {
 	int i, j, k, n;
@@ -298,4 +298,11 @@ void main()
 	}
 	for (i = 0; i < 10; i++) printf("%d ", b[i]);
 }
-#endif // 1
+#endif // 0
+
+
+void main()
+{
+	char a[5] = "asd";
+	printf("%c", a[0]);
+}
