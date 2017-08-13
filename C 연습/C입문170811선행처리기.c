@@ -349,31 +349,41 @@ void main(void)
 void main(void)
 {
 	int n1,n2, m;
-	int sum;
+	int sum = 0;
 	int i;
+	int r = 1;
 	int ar[6] = { 0 };
 	int cnt = 0;
 	printf(">>>> N진법연산 <<<<\n");
-	printf("2 ~ 16 진법 입력: \n");
+	printf("2 ~ 16 진법 입력: ");
 	scanf("%d",&m);
-	printf("Operand1 : \n");
-	scanf("%d",&n1);
-	printf("Operand2 : \n");
-	scanf("%d", &n2);
-	sum=n1+n2;
+	printf("Operand1 : ");
+	scanf("%x",&n1);
+	printf("Operand2 : ");
+	scanf("%x", &n2);
+	while (n1 || n2)
+	{
+		sum += (n1 % 0x10)*r;
+		sum += (n2 % 0x10)*r;
+		n1 /= 0x10;
+		n2 /= 0x10;
+		r *= m;
+	}
+	r = sum;
+
 	while (sum)
 	{
 		ar[cnt] = sum%m;
 		sum /= m;
 		cnt++;
 	}
-	printf("10진법 => %d   ", n1+n2);
+	printf("10진법 => %d   ", r);
 	printf("%d진법 => ", m);
 	for (i = cnt-1; i >= 0; i--)
 	{
-		if (ar[i] >= 10) printf("%c", ar[i] + 55);
-		else printf("%d\n", ar[i]);
+		printf("%x", ar[i]);
 	}
+	printf("\n");
 }
 #endif // 0
 
