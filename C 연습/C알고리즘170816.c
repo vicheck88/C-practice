@@ -679,7 +679,7 @@ int main(void)
 #endif // 1
 
 //마방진
-#if 1
+#if 0
 int main(void)
 {
 	int i, j;
@@ -789,8 +789,6 @@ int main(void)
 	}
 }
 #endif // 1
-
-
 
 //문자까지의 문자열
 #if 0
@@ -1167,6 +1165,172 @@ int main(void)
 	{
 		if (a[i] == -1) printf("V");
 		else printf("^");
+	}
+	return 0;
+}
+#endif // 1
+
+//숫자맞추기
+#if 0
+void decompose(int n, int *a)
+{
+	int i=0;
+	while (n)
+	{
+		a[i] = n % 10;
+		n /= 10;
+		i++;
+	}
+}
+
+int main(void)
+{
+	int n[2];
+	int a[4];
+	int b[4];
+	int strike = 0;
+	int ball = 0;
+	int i,j;
+	int tmp;
+	scanf("%d %d", &n[0], &n[1]);
+	decompose(n[0],a);
+	decompose(n[1],b);
+	for (i = 0; i < 4; i++)
+	{
+		if (a[i] == b[i]) strike++;
+		else
+		{
+			for (j = 0; j < 4; j++)
+			{
+				if (i == j) continue;
+				if (a[i] == b[j])
+				{
+					ball++;
+					break;
+				}
+			}
+		}
+	}
+	printf("%dA%dB", strike, ball);
+	return 0;
+}
+#endif // 1
+
+//초콜릿 이벤트
+#if 0
+int main(void)
+{
+	int trial;
+	int n, c, m;
+	int i;
+	int cnt;
+	int rem;
+	int tmp;
+	scanf("%d", &trial);
+	for (i = 0; i < trial; i++)
+	{
+		scanf("%d %d %d", &n, &c, &m);
+		cnt = n / c;
+
+		if (cnt >= m)
+		{
+			rem = cnt;
+			while (rem >= m)
+			{
+				tmp = rem / m;
+				cnt = cnt + tmp;
+				rem = rem%m + tmp;
+			}
+		}
+		printf("%d\n", cnt);
+	}
+	return 0;
+}
+#endif // 1
+
+//줄 세우기
+#if 0
+int main(void)
+{
+	int n;
+	int a[100];
+	int b[100];
+	int tmp;
+	int i,j;
+	scanf("%d", &n);
+	for (i = 0; i < n; i++)
+	{
+		scanf("%d", &a[i]);
+		if (a[i] == 0) b[i] = i + 1;
+		else
+		{
+			for (j = i-1; j >= i - a[i]; j--)
+			{
+				b[j + 1] = b[j];
+			}
+			b[i - a[i]] = i + 1;
+		}
+	}
+	for (i = 0; i < n; i++)
+	{
+		printf("%d ", b[i]);
+	}
+	return 0;
+}
+#endif // 1
+
+//369 게임
+#if 0
+int prime(int x)
+{
+	if (x == 1) return 0;
+	int i;
+	for (i = 2; i <= x / 2; i++)
+	{
+		if (!(x%i)) return 0;
+	}
+	return 1;
+}
+
+int main(void)
+{
+	int n;
+	int m;
+	int p;
+	int i;
+	int clap = 0;
+	int sqrt[1000];
+	scanf("%d %d %d", &n, &m, &p);
+	for (i = p+1; i <= m; i += n)
+	{
+		if (prime(i)) clap++;
+	}
+	printf("%d\n", clap);
+	return 0;
+}
+#endif // 1
+
+//배열
+#if 0
+int ar[1000][1000];
+int main(void)
+{
+	int m;
+	int n;
+	int i, j;
+	int cnt=0;
+	scanf("%d %d", &m, &n);
+	for (i = 0; i < m; i++)
+	{
+		for (j = 0; j < n; j++)
+		{
+			scanf("%d", &ar[i][j]);
+			if (ar[i][j]) cnt++;
+			else cnt = 0;
+			printf("%d ",cnt);
+		}
+		cnt = 0;
+		printf("\n");
 	}
 	return 0;
 }
