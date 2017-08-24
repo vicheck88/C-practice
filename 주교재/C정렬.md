@@ -50,7 +50,8 @@ int Sort_Bubble(SCORE * d, int order, int (*comp)(SCORE * x, SCORE * y))
 }
 ```
 
-![bubble1.gif](.\image\bubble1.gif)
+![bubble1.gif](http://www.xybernetics.com/techtalk/SortingAlgorithmsExplained/images/bubble1.gif)
+출처: http://www.xybernetics.com/techtalk/SortingAlgorithmsExplained/SortingAlgorithmsExplained.html
 
 ### 선택정렬(select sort)
 - 원소들을 탐색하여 가장 작은 수를 찾은 뒤, 이 수를 원래 있어야할 곳에 넣는 방법
@@ -67,7 +68,7 @@ int Sort_Select(SCORE * d, int order, int (*comp)(SCORE * x, SCORE * y))
 	{
 		for (j = 0, max_ind = 0; j <= i; j++)
 		{
-			if (d[j]<d[max_ind]) max_ind = j; //가장 작은 인덱스를 저장
+			if (d[j]<d[max_ind]) max_ind = j; //가장 큰 인덱스를 저장
 		}
 		if (j != max_ind) //저장한 인덱스의 숫자를 원래 있어야할 곳으로 이동
 		{
@@ -79,8 +80,10 @@ int Sort_Select(SCORE * d, int order, int (*comp)(SCORE * x, SCORE * y))
 	return cnt;
 }
 ```
-![SelectionEg02.gif](.\image\SelectionEg02.gif)
+![SelectionEg02.gif](http://www.xybernetics.com/techtalk/SortingAlgorithmsExplained/images/SelectionEg02.gif)
+출처: http://www.xybernetics.com/techtalk/SortingAlgorithmsExplained/SortingAlgorithmsExplained.html
 
 ### 삽입정렬(insertion sort)
 
-![InsertionEg02.gif](.\image\InsertionEg02.gif)
+![InsertionEg02.gif](http://www.xybernetics.com/techtalk/SortingAlgorithmsExplained/images/InsertionEg02.gif)
+출처: http://www.xybernetics.com/techtalk/SortingAlgorithmsExplained/SortingAlgorithmsExplained.html

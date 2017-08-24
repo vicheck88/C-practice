@@ -303,7 +303,7 @@ void main(void)
 // [1-1.9] 원하는 멤버를 갖는 데이터를 탐색하는 함수, 비교를 위한 call back 함수도 설계
 /***********************************************************/
 
-#if 1
+#if 0
 
 int Search_Data(int n, SCORE * p, int (*comp)(SCORE * x, SCORE* y))
 {
@@ -1897,7 +1897,7 @@ void main(void)
 // [1-5] 배열 기반 연결 리스트 - 더블 링크
 /***********************************************************/
 
-#if 1
+#if 0
 
 /***********************************************************/
 // [1-5.1] 기존 Linked List 방식중 그대로 사용하는 함수들
@@ -2304,7 +2304,7 @@ int Print_All_Node_Reverse(SCORE * head)
 
 #endif
 
-#if 1
+#if 0
 
 void main(void)
 {
@@ -2329,31 +2329,37 @@ void main(void)
 // [1-5.5] 더블 링크 사용의 장점 2, 역방향으로 일정 범위 인쇄
 /***********************************************************/
 
-#if 0
+#if 1
 
 int Print_Selected_Node(SCORE * head, int id, int num)
 {
-
-
-
-
-
-
+	int cnt=0;
+	int i;
+	SCORE *p = Search_Id_Node(head, id);
+	if (p == NULL) return -1;
+	for (i = 0; i < num && p !=NULL ; i++,p=p->next,cnt++)
+	{
+		printf("addr = 0x%.8X, ID=%d, NAME=%s, SCORE=%d, next=0x%.8X, prev=0x%.8X\n", p, p->id, p->name, p->jumsu, p->next, p->prev);
+	}
+	return cnt;
 }
 
 int Print_Selected_Node_Reverse(SCORE *head, int id, int num)
 {
-
-
-
-
-
-
+	int cnt = 0;
+	int i;
+	SCORE *p = Search_Id_Node(head, id);
+	if (p == NULL) return -1;
+	for (i = 0; i < num && p->prev != NULL; i++, p = p->prev, cnt++)
+	{
+		printf("addr = 0x%.8X, ID=%d, NAME=%s, SCORE=%d, next=0x%.8X, prev=0x%.8X\n", p, p->id, p->name, p->jumsu, p->next, p->prev);
+	}
+	return cnt;
 }
 
 #endif
 
-#if 0
+#if 1
 
 void main(void)
 {
@@ -2410,30 +2416,27 @@ int Sptr = STACK_EMPTY;
 
 int Push_Stack(int data)
 {
-
-
-
-
+	if (Sptr == STACK_FULL) return -1;
+	Stack[--Sptr] = data;
+	return 1;
 }
 
 int Pop_Stack(int *p)
 {
-
-
-
-
+	if (Sptr == STACK_EMPTY) return -1;
+	*p = Stack[Sptr++];
+	return 1;
 }
 
 int Print_Stack(void)
 {
 	int i;
 
-	for(i = Sptr + 1; i < MAX_STACK; i++)
+	for(i = Sptr ; i < MAX_STACK; i++)
 	{
 		printf("STACK[%d] = %d\n", i, Stack[i]);
 	}
-
-	return MAX_STACK - Sptr - 1;
+	return MAX_STACK - Sptr;
 }
 
 int Count_Full_Data_Stack(void)
@@ -2535,17 +2538,26 @@ int Rdptr = Q_EMPTY;
 
 int In_Queue(int data)
 {
-
-
-
-
+	int i;
+	if (Wrptr == MAX_Q)
+	{
+		if (Rdptr==Q_EMPTY) return -1;
+		for (i = Rdptr; i < Wrptr; i++)
+		{
+			Queue[i - Rdptr] = Queue[i];
+		}
+		Wrptr -= Rdptr;
+		Rdptr = Q_EMPTY;
+	}
+	Queue[Wrptr++] = data;
+	return 1;
 }
 
 int Out_Queue(int *p)
 {
-
-	
-	
+	if (Rdptr == Wrptr) return -1;
+	*p = Queue[Rdptr++];
+	return 1;
 }
 
 int Print_Queue(void)
@@ -2669,19 +2681,18 @@ int Rdptr = Q_MIN;
 
 int In_Queue(int data)
 {
-
-
-
-
-
+	if ((Wrptr + 1) % MAX_Q == Rdptr) return -1;
+	Queue[(Wrptr++) % MAX_Q] = data;
+	Wrptr %= MAX_Q;
+	return 1;
 }
 
 int Out_Queue(int *p)
 {
-
-
-
-
+	if (Wrptr == Rdptr) return -1;
+	*p = Queue[(Rdptr++) % MAX_Q];
+	Rdptr %= MAX_Q;
+	return 1;
 }
 
 int Print_Queue(void)
@@ -2693,6 +2704,7 @@ int Print_Queue(void)
 	for(i=0; i<n; i++)
 	{
 		printf("Queue[%d] = %d\n", rd, Queue[rd++]);
+		//rd++;
 		rd %= MAX_Q;
 	}
 
@@ -3022,12 +3034,22 @@ int Copy_Score_Node(SCORE * head, int jumsu, SCORE * buf)
 
 int Insert_Node(SCORE * head, SCORE * d)
 {
+	for (;;) //최대값이 정해지지 않았으므로 무한루프 이용
+	{
+		if (head->next == NULL || head->next->id > d->id) //삽입할 자리를 찾은 경우
+		{
+			SCORE *p = calloc(1, sizeof(SCORE));
+			// calloc을 통해 0으로 초기화된 힙공간을 할당받음(배열기반과의 차이점)
+			*p = *d; // 입력값을 힙 메모리에 저장
+			if (p == NULL) return -1;
 
-
-
-
-
-
+			p->next = head->next;
+			head->next = p;
+			return 1;
+		}
+		if (head->next->id == d->id) return -2;
+		head = head->next;
+	}
 }
 
 #endif
@@ -3071,14 +3093,19 @@ void main(void)
 
 int Delete_Node(SCORE * head, int id)
 {
-
-
-
-
-
-
-
-
+	SCORE *p;
+	for (;;)
+	{
+		if (head->next == NULL) return -1;
+		if (head->next->id == id)
+		{
+			p = head->next;
+			head->next = head->next->next;
+			free(p);
+			return 1;
+		}
+		head = head->next;
+	}
 }
 
 #endif
@@ -3468,7 +3495,7 @@ void main(void)
 // [2-2.3] 기존 Linked List 방식중 그대로 사용하는 함수들
 /***********************************************************/
 
-#if 0
+#if 1
 
 #include <stdio.h>
 #include <string.h>
@@ -3748,17 +3775,27 @@ int Print_Selected_Node_Reverse(SCORE *head, int id, int num)
 // [2-2.3] 데이터 하나를 생성하여 Linked List에 추가하는 함수 (calloc 사용)
 /***********************************************************/
 
-#if 0
+#if 1
 
 int Insert_Node(SCORE * head, SCORE * d)
 {
-
-
-
-
-
-
-
+	SCORE *p;
+	for (;;)
+	{
+		if (head->next == NULL || head->next->id > d->id)
+		{
+			p = calloc(1, sizeof(SCORE));
+			if (p == NULL) return -1;
+			*p = *d;
+			p->prev = head;
+			p->next = head->next;
+			if (head->next) head->next->prev = p;
+			head->next = p;
+			return 1;
+		}
+		if (head->next->id == d->id) return -2;
+		head = head->next;
+	}
 }
 
 #endif
@@ -3782,21 +3819,23 @@ void main(void)
 // [2-2.4] 주어진 사번의 node를 찾아서 삭제하는 함수
 /***********************************************************/
 
-#if 0
+#if 1
 
 int Delete_Node(SCORE * head, int id)
 {
-
-
-
-
-
-
+	SCORE *tmp;
+	tmp = Search_Id_Node(head, id);
+	if (tmp == NULL) return -1;
+	
+	tmp->prev->next = tmp->next;
+	if (tmp->next != NULL)tmp->next->prev = tmp->prev;
+	free(tmp);
+	return 1;
 }
 
 #endif
 
-#if 0
+#if 1
 
 void main(void)
 {
@@ -3838,7 +3877,7 @@ void main(void)
 typedef struct _stk
 {
 	int num;
-	struct _stk * next; 
+	struct _stk * prev; 
 }STACK;
 
 STACK * Sptr = (STACK *)0;
@@ -3851,35 +3890,47 @@ int Count_Full_Data_Stack(void);
 
 int Push_Stack(STACK *data)
 {
-
-
-
-
+	STACK *p = calloc(1, sizeof(STACK));
+	if (p == NULL) return -1;
+	*p = *data;
+	p->prev = Sptr;
+	Sptr= p ;
+	return 1;
 }
 
 int Pop_Stack(STACK *p)
 {
-
-
-
-
+	STACK *tmp=Sptr;
+	if (tmp == NULL) return -1;
+	*p = *Sptr;
+	Sptr = Sptr->prev;
+	free(tmp);
+	return 1;
+}
+int Count_Full_Data_Stack(void)
+{
+	int cnt = 0;
+	STACK *tmp = Sptr;
+	while (tmp)
+	{
+		cnt++;
+		tmp = tmp->prev;
+	}
+	return cnt;
 }
 
 int Print_Stack(void)
 {
-
-
-
-
+	STACK *tmp = Sptr;
+	while (tmp)
+	{
+		printf("%d\n", (*tmp).num);
+		tmp = tmp->prev;
+	}
+	return Count_Full_Data_Stack();
 }
 
-int Count_Full_Data_Stack(void)
-{
 
-
-
-
-}
 
 void main(void)
 {
@@ -3943,36 +3994,52 @@ int Out_Queue(QUEUE * p);
 int Print_Queue(void);
 int Count_Full_Data_Queue(void);
 
-int In_Queue(QUEUE * data)
+int In_Queue(QUEUE * data) //enqueue 작업
 {
+	QUEUE *q = calloc(1, sizeof(QUEUE));
+	if (q == NULL) return -1;
+	*q = *data;
 
-
-
-
+	(Wrptr == NULL) ? (Rdptr = q) : (Wrptr->next = q);
+	//입력값이 없을경우 Rdptr도 이동. 있을 경우 q를 다음 값으로 지정
+	Wrptr = q;
+	Wrptr->next = NULL; //최근값이므로 next부분을 0로 만듦
+	return 1;	
 }
 
-int Out_Queue(QUEUE * p)
+int Out_Queue(QUEUE * p) //dequeue 작업
 {
-
-
-
-
+	QUEUE *tmp = Rdptr;
+	if (Rdptr == NULL) return -1; //읽을 값이 없을 경우
+	*p = *Rdptr;
+	Rdptr = Rdptr->next;
+	if (Rdptr == NULL) Wrptr = NULL; 
+	// 더 이상 읽을 값이 없을 경우 Wrptr 역시 같은 방향으로 이동
+	free(tmp);
+	return 1;
 }
 
 int Print_Queue(void)
 {
-
-
-
-
+	int cnt=0;
+	QUEUE *tmp = Rdptr;
+	for (;;cnt++)
+	{
+		if (tmp == NULL) return cnt;
+		printf("num:%d   adrress: 0x%p   next: 0x%p\n", tmp->num, tmp, tmp->next);
+		tmp = tmp->next;
+	}
 }
 
 int Count_Full_Data_Queue(void)
 {
-
-
-
-
+	int cnt = 0;
+	QUEUE *tmp = Rdptr;
+	for (;;cnt++)
+	{
+		if (tmp == NULL) return cnt;
+		tmp = tmp->next;
+	}
 }
 
 void main(void)
@@ -5066,14 +5133,13 @@ void Init_Hash_Table(void)
 #endif
 
 #if 0
-
 void Print_All_Data(void)
 {
 	int i;
 
 	for(i=0; i<MAX_ST; i++)
 	{
-		if(Hash_table[i].id != -1) printf("[%d] ID: %d, NAME: %s\n", i, Hash_table[i].id, Hash_table[i].name);
+		if(Hash_table[i].id != -1 && Hash_table[i].id!=-2) printf("[%d] ID: %d, NAME: %s\n", i, Hash_table[i].id, Hash_table[i].name);
 	}
 }
 
@@ -5087,12 +5153,18 @@ void Print_All_Data(void)
 
 int Insert_Data(SCORE * d)
 {
-
-
-
-
-
-
+	int hash = Get_Hash_Key(d->id);
+	int pos = hash;
+	for (;;)
+	{
+		if (Hash_table[pos].id == -1 || Hash_table[pos].id==-2)
+		{
+			Hash_table[pos] = *d;
+			return pos;
+		}
+		pos = (pos+STEP) % MAX_ST;
+		if (pos == hash) return -1;
+	}
 }
 
 #endif
@@ -5119,16 +5191,20 @@ void main(void)
 // [3-3.3] Search
 /***********************************************************/
 
-#if 0
+#if 1
 
 SCORE * Search_Data(int id)
 {
+	int hash = Get_Hash_Key(id);
+	int pos = hash;
 
-
-
-
-
-
+	for (;;)
+	{
+		if (Hash_table[pos].id == id) return &Hash_table[pos];
+		if (Hash_table[pos].id == -1) return NULL;
+		pos = (pos + STEP) % MAX_ST;
+		if (pos == hash) return NULL;
+	}
 }
 
 #endif
@@ -5183,14 +5259,15 @@ int Delete_Data(int id)
 // 새로은 Insert 함수가 설계되면 [3-3.2]에서 설계된 Insert_Data 함수는 삭제한다
 /***********************************************************/
 
-#if 0
+#if 1
 
 int Delete_Data(int id)
 {
-
-
-
-
+	SCORE *p;
+	p = Search_Data(id);
+	if (p == NULL) return -1;
+	p->id = -2;
+	return 1;
 }
 
 int Insert_Data(SCORE * d)
@@ -5500,13 +5577,13 @@ void main(void)
 // [3-3.9] Hash Table => Chainning 방법의 구현
 /***********************************************************/
 
-#if 0
+#if 1
 
 /***********************************************************/
 // [3-3.9] Hash Table을 위한 기본 함수들
 /***********************************************************/
 
-#if 0
+#if 1
 
 #include <stdio.h>
 #include <string.h>
@@ -5596,15 +5673,29 @@ void Print_All_Data(void)
 // [3-3.10] Insert
 /***********************************************************/
 
-#if 0
+#if 1
 
 int Insert_Data(SCORE * d)
 {
-
-
-
-
-
+	SCORE *head;
+	SCORE *p;
+	int hash = Get_Hash_Key(d->id);
+	p = calloc(1, sizeof(SCORE));
+	if (p == NULL) return -1;
+	*p = *d;
+	head = &Hash_table[hash];
+	for (;;)
+	{
+		
+		if (head->next == NULL || head->next->id>p->id)
+		{
+			p->next = head->next;
+			head->next=p;
+			return 1;
+		}
+		if (head->next->id == p->id) return -1;
+		head = head->next;
+	}
 
 }
 
@@ -5632,15 +5723,27 @@ void main(void)
 // [3-3.11] Delete
 /***********************************************************/
 
-#if 0
+#if 1
 
 int Delete_Data(int id)
 {
-
-
-
-
-
+	SCORE * head;
+	SCORE * tmp;
+	int hash = Get_Hash_Key(id);
+	head = &Hash_table[hash];
+	for (;;)
+	{
+		if (head->next == NULL) return 0;
+		if (head->next->id > id) return 0;
+		if (head->next->id == id)
+		{
+			tmp = head->next;
+			head->next = tmp->next;
+			free(tmp);
+			return 1;
+		}
+		head = head->next;
+	}
 }
 
 #endif
@@ -5675,20 +5778,25 @@ void main(void)
 // [3-3.12] Search
 /***********************************************************/
 
-#if 0
+#if 1
 
 SCORE * Search_Data(int id)
 {
-
-
-
-
-
+	SCORE *head;
+	int hash = Get_Hash_Key(id);
+	head = &Hash_table[hash];
+	for (;;)
+	{
+		if (head->next == NULL) return NULL;
+		if (head->next->id == id) return head->next;
+		if (head->next->id > id) return NULL;
+		head = head->next;
+	}
 }
 
 #endif
 
-#if 0
+#if 1
 
 void main(void)
 {
