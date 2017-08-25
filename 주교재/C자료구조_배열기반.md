@@ -296,3 +296,22 @@ int Out_Queue(int *p) //큐 안의 데이터 출력
 - Dequeue: Rdptr 위치의 자료를 읽은 뒤 항상 1 증가하며, 읽기 불가 상태는 Linear 상황과 동일
 - Queue: Wrptr은 계속 1 증가하며, 버퍼를 벗어날 때 0부터 다시 시작
 - 쓰기 동작 이전에 바로 앞에 Rdptr이 있는지를 항상 확인해야함
+
+```cpp
+int In_Queue(int data)
+{
+	if ((Wrptr + 1) % MAX_Q == Rdptr) return -1; //가득 찬 경우
+	Queue[(Wrptr++) % MAX_Q] = data;
+	Wrptr %= MAX_Q;
+	return 1;
+}
+```
+```cpp
+int Out_Queue(int *p)
+{
+	if (Wrptr == Rdptr) return -1; //읽기 불능인 경우
+	*p = Queue[(Rdptr++) % MAX_Q];
+	Rdptr %= MAX_Q;
+	return 1;
+}
+```
