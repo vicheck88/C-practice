@@ -103,7 +103,7 @@ STR Rs,[Rd]: *Rd = Rs;
 
 ### WDT 제어
 - 0x53000000번지에 0을 대입
-```llvm
+```assembly
 ldr r0,=0x53000000
 ldr r1,=0x0
 str r1,[r0]
