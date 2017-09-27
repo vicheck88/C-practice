@@ -156,7 +156,7 @@ ldr r0,=-100 -> mvn r0,#0x63
 - AND: mask 연산 수행(출력하고 싶은 부분은 1, 아닌 부분은 0으로)
 - BIC는 AND와 반대로 수행(출력하고 싶은 부분은 0으로, 아닌 부분은 1로)
 - mov와 마찬가지로 \#상수는 제한 범위를 가지고 있음
-- 하지만, ldr, mov, mvn때와 마찬가지고 컴파일러가 자동으로 바꿔줄 수 있음
+- 하지만, ldr, mov, mvn때와 마찬가지로 컴파일러가 자동으로 바꿔줄 수 있음
 ```assembly
     orr r0,r0,#0xffffff00 @오류
     and r0,r0,#0xffffff00 @ -> bic r0,r0,#0xff: 가능
@@ -206,8 +206,8 @@ ldr r0,=-100 -> mvn r0,#0x63
     ldr		r0,=GPBCON
     ldr 	r1,[r0]
     @Modify
-    bic 	r1,r1,#(0xff<<14)
-    orr 	r1,r1,#(0x55<<14)
+    bic 	r1,r1,#(0xff<<14) @shift연산: 훨씬 편해짐
+    orr 	r1,r1,#(0x55<<14) @shift연산: 훨씬 편해짐
     @Write
     str 	r1,[r0]
 ```
@@ -240,8 +240,7 @@ ldr r0,=-100 -> mvn r0,#0x63
 ```assembly
 	.global label1 @ global label 선언
 	label1:
-```
-```assembly
+
 	.extern label1 @ 다른 파일의 global label 사용
 	label1:
 ```
