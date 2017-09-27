@@ -26,15 +26,15 @@
 출처: http://blog.naver.com/PostView.nhn?blogId=ham9627&logNo=220565656620&categoryNo=0&parentCategoryNo=0&viewDate=&currentPage=1&postListTopCurrentPage=1&from=postView
 
 ```assembly
-@GPBCON 설정(GPIO 출력을 설정)
-ldr 	r0,=GPBCON
-ldr 	r1,=0x154000
-str 	r1,[r0]
+    @GPBCON 설정(GPIO 출력을 설정)
+    ldr 	r0,=GPBCON
+    ldr 	r1,=0x154000
+    str 	r1,[r0]
 
-@GPBDAT 설정(0을 입력: LED 켜기)
-ldr 	r0,=GPBDAT
-ldr 	r1,=0x0
-str 	r1,[r0]
+    @GPBDAT 설정(0을 입력: LED 켜기)
+    ldr 	r0,=GPBDAT
+    ldr 	r1,=0x0
+    str 	r1,[r0]
 ```
 
 ### 비트 연산의 필요성
@@ -93,9 +93,9 @@ str 	r1,[r0]
 			- 오른쪽으로 26번 rotate하면 되며, 따라서 ROR 부분은 13
 			- 코드표현으로는 `0xdc3`
 
-![# value](https://i.stack.imgur.com/0cPOx.png)
+![# value](https://github.com/vicheck88/C-practice/blob/master/image/arm%20instruction%20set%20encoding.PNG?raw=true)
 
-출처: https://stackoverflow.com/questions/11785973/converting-very-simple-arm-instructions-to-binary-hex
+출처: ARM architecture manual A3-1, instruction set encoding
 
 - = 상수: 범위 제한 없는 32비트 값으로 표현 가능
 	- LDR 명령에서만 사용 가능
@@ -160,8 +160,8 @@ ldr r0,=-100 -> mvn r0,#0x63
 - mov와 마찬가지로 \#상수는 제한 범위를 가지고 있음
 - 하지만, ldr, mov, mvn때와 마찬가지고 컴파일러가 자동으로 바꿔줄 수 있음
 ```assembly
-orr r0,r0,#0xffffff00 @오류
-and r0,r0,#0xffffff00 @ -> bic r0,r0,#0xff: 가능
+    orr r0,r0,#0xffffff00 @오류
+    and r0,r0,#0xffffff00 @ -> bic r0,r0,#0xff: 가능
 ```
 
 |명령 기본 형식|`(op) Rd,Rs,OP2 -> Rd := Rs (op) OP2`|
@@ -178,15 +178,15 @@ and r0,r0,#0xffffff00 @ -> bic r0,r0,#0xff: 가능
 3. 수정된 값을 다시 원래 주소로 보냄(Write)
 
 ```assembly
-@ GPBCON
-@Read
-ldr 	r0,=GPBCON
-ldr 	r1,[r0]
-@Modify
-bic 	r1,r1,#0x3fc000
-orr 	r1,r1,#0x154000
-@Write
-str 	r1,[r0]
+    @ GPBCON
+    @Read
+    ldr 	r0,=GPBCON
+    ldr 	r1,[r0]
+    @Modify
+    bic 	r1,r1,#0x3fc000
+    orr 	r1,r1,#0x154000
+    @Write
+    str 	r1,[r0]
 ```
 
 ### 어셈블러 기본 Pseudo 연산자
@@ -228,3 +228,101 @@ str 	r1,[r0]
 ![control flow](https://image.slidesharecdn.com/armisa-170326092339/95/arm-architecture-instruction-set-44-638.jpg?cb=1490520227)
 
 출처: https://www.slideshare.net/dwightsabio/arm-architecture-instruction-set
+
+### Label
+- 분기 위치를 결정하는 Label에는 Global과 Local이 있음
+- Global: 다른 파일에서도 접근할 수 있는 label(extern 생각)
+- label은 함수, 변수 이름처럼 사용 가능
+	- `.global directive`: 다른 파일에서의 참조를 허용(C언어의 extern 개념)
+	- `.extern directive`: 다른 파일의 레이블 참조
+	- B(Branch)는 원위치로 돌아오지 않음: 리턴되지 않음
+	- 동일한 이름이 반복되지 않음
+	- label의 위치는 상관 없음
+
+```assembly
+	  .global label1 @ global label 선언
+	label1:
+```
+```assembly
+      .extern label1 @ 다른 파일의 global label 사용
+    label1:
+```
+
+- Local Label: 국소적인 부분에서만 사용할 경우(예: for문) 굳이 이름을 붙일 필요가 없음
+- 이경우 local label을 사용
+	- 숫자를 통해 이름을 만듦
+	- 중복 숫자가 가능
+	- 어느 label로 분기하는 지 결정하기 위해 현재 코드를 위치로 어느 방향에 있는지를 명시해야: b(backward), f(forward)를 통해 앞뒤를 결정하며, 가장 가까운 label로 이동
+	- local label에 `.global, .extern`명령을 만드는 것은 불가능
+	- 어셈블러에 따라 규칙이 다를 수 있음
+
+```assembly
+	1: mov r1,#200
+    1: mov r0,#100
+    	b 1b @후방에서 가장 가까운 1로 분기
+
+        b 2f @전방에서 가장 가까운 2로 분기
+    2:
+    	sub r0,r0,r1
+    2: str r0,[r1]
+```
+
+### 상태 레지스터와 flag
+- CPSR: Current Program Status Register
+
+![CPSR](https://image.slidesharecdn.com/arm-cortex-m3byjoebungoarm-150928184843-lva1-app6892/95/arm-cortexm3-byjoebungoarm-21-638.jpg?cb=1443466212)
+
+출처: https://www.slideshare.net/ahireprashant/arm-cortexm3-byjoebungoarm
+
+- N: 연산결과가 음수
+- Z: 연산결과가 0
+- C: Carry 발생여부, V: Overflow 발생여부
+    - Overflow와 Carry
+        - Carry는 최상위 비트와 그 전 비트에서의 값 넘김 여부가 같을 경우
+        - Overflow는 최상위 비트와 그 전 비트에서의 값 넘김 여부가 다를 경우
+        - Unsigned 상황에서는 Carry만 살펴보면 됨(V flag는 상관 없음)
+        - 기본적으로 어셈블러는 모든 수를 signed로 살펴봄
+- Q: saturation 관리
+	- Overflow 등으로 이상한 결과가 나올 경우(최대치, 최소치에 있을 경우) 값의 결과가 더 넘어가지 않도록 해주는 역할 수행
+	- 최대치에 있을 경우를 saturation 상황이라고 부름
+
+### 비교 연산 명령어
+- 분기를 위해 값들을 비교하는 비교 연산 명령어 사용
+- 상태 플래그 값들을 변경
+	- `CMP,CMN`: N,Z,C,V flag (`add,sub`) 사용
+	- `TST,TEQ`: N,Z flag (`and, eor`) 사용
+	- OP2 계산(`R1 lsl #2` 등) 시 C flag 업데이트 가능
+- 연산의 결과는 저장되지 않으며 flag 상태에만 영향을 줌
+
+![comparison](https://image.slidesharecdn.com/armisa-170326092339/95/arm-architecture-instruction-set-36-638.jpg?cb=1490520227)
+
+출처: https://www.slideshare.net/dwightsabio/arm-architecture-instruction-set
+
+```assembly
+	cmp r0,#5 @r0-5의 상태를 flag에 저장(r0==5일 경우 Z=1)
+    cmn r0,#5 @r0+5의 상태를 flag에 저장(r0==-5일 경우 Z=1)
+
+    tst r0,#1<<7 @r0 & 1<<7의 상태를 flag에 저장
+    teq r0,#1<<7 @r0 ^ 1<<7의 상태를 flag에 저장
+```
+
+### 상태 플래그와 조건
+- N,Z,C,V 상태를 통해 연산의 현재 결과를 정리할 수 있음
+
+![condition flag](https://github.com/vicheck88/C-practice/blob/master/image/condition%20flag.PNG?raw=true)
+
+출처: ARM architecture reference manual A3-6 Table 3-1, condition codes
+
+- 명령 뒤에 코드를 붙여 조건을 걸 수 있음
+
+```assembly
+	CMP r0,r1
+    MOVEQ r1,#2 @상태코드가 EQ일 경우 명령 수행
+```
+
+### 분기 명령과 파이프라인
+- ARM7: 3단, ARM9: 5단, ARM10:6단의 파이프라인을 가지고 있으나 기본은 3단
+- 파이프라인이 사용될 경우 분기 명령 수행시 손실 발생
+	- 명령어는 기본적으로 Fetch,Decode,Execute의 phase로 동작
+	- 파이프라인을 통해 한 사이클의 3개 명령을 한 phase씩 수행
+	- 분기 발생시 미리 fetch해둔 명령들은 버려짐: 속도에 손해 발생
