@@ -336,26 +336,26 @@ ldr r0,=-100 -> mvn r0,#0x63
 
 ```assembly
 	@r0>r1 -> r2=-2, r0<r1 -> r2=0, r0==r1 -> r2=1 구할 때
-        cmp r0,r1
-        bgt large
-        blt small
-        mov r2,#1
-        b finish
+    	cmp r0,r1
+    	bgt large
+    	blt small
+    	mov r2,#1
+    	b finish
 	small:
     	mov r2,#0
-    large:
+	large:
     	mov r2,#-2
-    finish:
+	finish:
 	@기존 방법 이용: 잦은 분기 발생
 ```
 ```assembly
-    cmp r0,r1
-    movgt r2,#-2
-    movlt r2,#0
-    moveq r2,#1
-    @조건부 실행 이용: 분기 상황이 많이 발생하지 않음
-    @조건은 flag 상태로 판단
-    @위 방법에 비해 좀 더 빠르게 같은 문장 실행 가능: 파이프라인에 이미 들어있음
+	cmp r0,r1
+	movgt r2,#-2
+	movlt r2,#0
+	moveq r2,#1
+	@조건부 실행 이용: 분기 상황이 많이 발생하지 않음
+	@조건은 flag 상태로 판단
+	@위 방법에 비해 좀 더 빠르게 같은 문장 실행 가능: 파이프라인에 이미 들어있음
 ```
 
 ### 산술 명령어
