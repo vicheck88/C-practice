@@ -336,15 +336,15 @@ ldr r0,=-100 -> mvn r0,#0x63
 
 ```assembly
 	@r0>r1 -> r2=-2, r0<r1 -> r2=0, r0==r1 -> r2=1 구할 때
-    	cmp r0,r1
-    	bgt large
-    	blt small
-    	mov r2,#1
-    	b finish
+        cmp r0,r1
+        bgt large
+        blt small
+        mov r2,#1
+        b finish
 	small:
-    	mov r2,#0
+        mov r2,#0
 	large:
-    	mov r2,#-2
+        mov r2,#-2
 	finish:
 	@기존 방법 이용: 잦은 분기 발생
 ```
