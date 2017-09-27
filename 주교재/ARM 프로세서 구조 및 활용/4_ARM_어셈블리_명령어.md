@@ -454,8 +454,8 @@ ldr r0,=-100 -> mvn r0,#0x63
 - `.byte, .hword, .word(4B), .short, .char, .string, .double`가 있으며, 메모리의 주소에 해당 값에 해당하는 정보를 삽입
 
 ```assembly
-		.word 0x100
-		.word 10,20,30,40 @연속된 주소에 .word타입 정보 삽입
+	  .word 0x100
+	  .word 10,20,30,40 @연속된 주소에 .word타입 정보 삽입
 	tbl1:.char 'A' @'A'의 주소를 심볼로 관리
 	tbl2:.string 'Hello' @연속된 6바이트의 주소에 삽입
 ```
