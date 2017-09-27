@@ -3,7 +3,7 @@
 - 그림과 실제 메모리 위치는 다름: C에서 주소를 재배치하는 과정에서 일어난 일
 - 실행 파일의 크기: 메모리 구조중 text(code + RO data) + initialized data
 - BSS 영역의 초기화는 0이므로 실행파일에 포함시키지 않고 나중에 알아서 배정하면 됨
-- initialized data을 실행파일에 포함하여 효율성을 높임(실행파일에 없을 경우, 프로그램 코드는 데이터와 데이터를 보관할 주소, 2가지의 정보를 더 필요로 하게 됨)
+- initialized data을 실행파일에 포함하여 효율성을 높임(실행파일에 없을 경우 더 많은 코드가 필요하게 됨)
 - initialized data, bss: 읽고 쓰기가 전부 가능해야 하므로 RAM에 저장
 
 ![memory for c](http://cs-fundamentals.com/assets/images/code-data-segments.png)
