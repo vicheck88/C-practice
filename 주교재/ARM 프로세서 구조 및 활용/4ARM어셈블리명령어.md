@@ -240,11 +240,11 @@ ldr r0,=-100 -> mvn r0,#0x63
 	- label의 위치는 상관 없음
 
 ```assembly
-	  .global label1 @ global label 선언
+	.global label1 @ global label 선언
 	label1:
 ```
 ```assembly
-      .extern label1 @ 다른 파일의 global label 사용
+	.extern label1 @ 다른 파일의 global label 사용
     label1:
 ```
 
