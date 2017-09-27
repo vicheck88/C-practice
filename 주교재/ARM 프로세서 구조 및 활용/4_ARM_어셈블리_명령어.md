@@ -341,10 +341,8 @@ ldr r0,=-100 -> mvn r0,#0x63
         blt small
         mov r2,#1
         b finish
-	small:
-        mov r2,#0
-	large:
-        mov r2,#-2
+	small: mov r2,#0
+	large: mov r2,#-2
 	finish:
 	@기존 방법 이용: 잦은 분기 발생
 ```
