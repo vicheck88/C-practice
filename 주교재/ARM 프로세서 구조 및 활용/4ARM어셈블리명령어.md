@@ -326,3 +326,38 @@ ldr r0,=-100 -> mvn r0,#0x63
 	- 명령어는 기본적으로 Fetch,Decode,Execute의 phase로 동작
 	- 파이프라인을 통해 한 사이클의 3개 명령을 한 phase씩 수행
 	- 분기 발생시 미리 fetch해둔 명령들은 버려짐: 속도에 손해 발생
+
+```assembly
+    BEQ 3f @이 상황에서 밑에 fetch한 명령어들은 전부 사라지게 됨
+    MOV R0,R1
+    LDR R0,[R2]
+```
+
+### 조건부 명령 실행
+- 조건이 참이면 실행, 거짓이면 넘기는 명령
+- 파이프라인의 분기를 줄이기 위해 사용
+	- 잦은 분기 없이도 조건에 따른 명령 실행 가능: 파이프라인의 효율 증가
+
+```assembly
+	@r0>r1 -> r2=-2, r0<r1 -> r2=0, r0==r1 -> r2=1 구할 때
+        cmp r0,r1
+        bgt large
+        blt small
+        mov r2,#1
+        b finish
+	small:
+    	mov r2,#0
+    large:
+    	mov r2,#-2
+    finish:
+	@기존 방법 이용: 잦은 분기 발생
+```
+```assembly
+	cmp r0,r1
+    movgt r2,#-2
+    movlt r2,#0
+    moveq r2,#1
+    @조건부 실행 이용: 분기 상황이 많이 발생하지 않음
+    @조건은 flag 상태로 판단
+    @위 방법에 비해 좀 더 빠르게 같은 문장 실행 가능: 파이프라인에 이미 들어있음
+```
