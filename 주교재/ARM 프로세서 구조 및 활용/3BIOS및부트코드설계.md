@@ -26,7 +26,7 @@
 - RISC 계열 CPU들은 레지스터를 많이 두는 편
 - R0 ~ R14: 범용 레지스터로, 자유롭게 사용 가능
 	- R13,14 레지스터의 경우, 스택포인터, 함수 리턴값 저장용으로 사용되기도
-	- 따라서, R0 ~ R12의 경우만이 지정한 범용 레지스터
+	- 따라서, R0 ~ R12의 경우만이 진정한 범용 레지스터
 - R15: 특수목적용 (프로그램 카운터)
 - CPSR: Current Program Status Register
 	- 현재 CPU의 상태 저장
@@ -79,18 +79,19 @@
 ### 레지터스 간접참조, LDR STR
 - 특정 주소에 있는 메모리를 LDR/STR할 때는 간접 참조 사용
 
-|레지스터 간접참조|`ldr Rd,[Rs]`|
+|레지스터 간접참조||
 |:---:|:---|
+|LDR|`ldr Rd,[Rs]`|
 ||`Rd := [Rs]`<br/>Rs 레지스터 값을 메모리 주소로 그 내용을 Rd로 로드<br/>Rs,Rd: r0 ~ r15 |
-||`str Rs,[Rd`|
+|STR|`str Rs,[Rd]`|
 ||`[Rd] := Rs`<br/>Rd 레지스터 값을 메모리 주소로 그 내용에 Rs 저장<br/>Rs,Rd: r0 ~ r15|
 |활용 예|`LDR r0,[r1]`: R0 값 = R1 주소 안의 값<br/>`STR r0,[r1]` : R0 값 = R1 주소 |
 
 - C문법으로 다음과 같이 이해가능
 
 ```cpp
-LDR Rd,[Rs]: Rd = *Rs;
-STR Rs,[Rd]: *Rd = Rs;
+Rd = *Rs; //LDR Rd,[Rs]
+*Rd = Rs; //STR Rs,[Rd]
 ```
 
 ### WDT 레지스터
@@ -108,7 +109,6 @@ ldr r0,=0x53000000
 ldr r1,=0x0
 str r1,[r0]
 ```
-<<<<<<< HEAD
 
 ### ARM920T Coprocessor
 - 코프로세서는 CPU에 없는 기능을 수행하는 보조 프로세서
