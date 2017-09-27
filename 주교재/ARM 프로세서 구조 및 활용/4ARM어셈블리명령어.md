@@ -245,7 +245,7 @@ ldr r0,=-100 -> mvn r0,#0x63
 ```
 ```assembly
 	.extern label1 @ 다른 파일의 global label 사용
-    label1:
+	label1:
 ```
 
 - Local Label: 국소적인 부분에서만 사용할 경우(예: for문) 굳이 이름을 붙일 필요가 없음
@@ -259,11 +259,11 @@ ldr r0,=-100 -> mvn r0,#0x63
 ```assembly
 	1: mov r1,#200
     1: mov r0,#100
-    	b 1b @후방에서 가장 가까운 1로 분기
+       b 1b @후방에서 가장 가까운 1로 분기
 
-        b 2f @전방에서 가장 가까운 2로 분기
+       b 2f @전방에서 가장 가까운 2로 분기
     2:
-    	sub r0,r0,r1
+       sub r0,r0,r1
     2: str r0,[r1]
 ```
 
@@ -317,7 +317,7 @@ ldr r0,=-100 -> mvn r0,#0x63
 
 ```assembly
 	CMP r0,r1
-    MOVEQ r1,#2 @상태코드가 EQ일 경우 명령 수행
+	MOVEQ r1,#2 @상태코드가 EQ일 경우 명령 수행
 ```
 
 ### 분기 명령과 파이프라인
@@ -353,7 +353,7 @@ ldr r0,=-100 -> mvn r0,#0x63
 	@기존 방법 이용: 잦은 분기 발생
 ```
 ```assembly
-	cmp r0,r1
+    cmp r0,r1
     movgt r2,#-2
     movlt r2,#0
     moveq r2,#1
@@ -361,3 +361,54 @@ ldr r0,=-100 -> mvn r0,#0x63
     @조건은 flag 상태로 판단
     @위 방법에 비해 좀 더 빠르게 같은 문장 실행 가능: 파이프라인에 이미 들어있음
 ```
+
+### 산술 명령어
+- OP2는 항상 뒤에 와야 함: `sub r1,#1,r0`: 불가능
+
+|계산|형식|
+|---|---|
+|ADD|`ADD rd,rs,op2` `rd := rs + op2`|
+|ADC|`ADC rd,rs,op2` `rd := rs + op2 + carry`|
+|SUB|`SUB rd,rs,op2` `rd := rs - op2`|
+|SBC|`SBC rd,rs,op2` `rd := rs - op2 - !carry`|
+|RSB|`RSB rd,rs,op2` `rd := op2 - rs`|
+|RSC|`RSC rd,rs,op2` `rd := op2 - rs - !carry`|
+
+### ADDS,SUBS: 64비트 계산에서
+- 64비트 덧셈, 뺄셈: `[r5:r4]=[r3:r2]+-[r1:r0]`
+- 다음 코드의 문제
+    ```assembly
+        ADD r4,r2,r0
+        ADC r5,r3,r1 @앞의 수에서 발생한 값을 포함
+
+        SUB r4,r2,r0
+        SBC r5,r3,r1 @앞의 계산에서 발생한 값을 포함
+    ```
+    - `ADD`함수는 캐리가 발생하여도 carry flag에 캐리값을 반영하지 않음
+    - `SUB`함수 역시 같음
+    - 상태 flag는 flag에 상태를 반영하라는 명령이 있을 때만 값을 입력
+    - flag 반영 명령은 기존 명령의 뒤에 S를 붙임으로써 내릴 수 있음(S-suffix)
+    - 따라서 `ADD` 대신 `ADDS`, `SUB` 대신 `SUBS`를 사용해야 함
+- 비교 명령 외의 명령에서 CPSR 갱신을 하려면 S-suffix를 반드시 사용해야 함
+
+### ADDS, SUBS: 일정 횟수 반복 프로그램
+- 특정 기능을 10회 반복하는 경우 두 가지 방법을 생각할 수 있음
+    ```assembly
+        @for(i=0;i<10;i++)
+        mov r0,#0
+     1:[do something]
+        add r0,r0,#1
+        cmp r0,#10
+        blt 1b
+    ```
+    ```assembly
+        @for(i=10;i>0;i--)
+        mov r0,#0
+     1:[do something]
+        sub r0,r0,#1
+        cmp r0,#0
+        bgt 1b
+	```
+- 두번째 방법에서 SUB 대신 SUBS를 사용할 경우
+	- S-suffix로 인해 자동으로 flag 갱신
+	- 따라서 CMP 명령을 사용할 필요가 없어짐: 효율 증가
