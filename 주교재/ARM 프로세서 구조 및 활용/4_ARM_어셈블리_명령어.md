@@ -116,11 +116,9 @@
 		- 메모리 사용이 늘어나야 할 경우 (mov -> ldr) 컴파일러가 변경할 수 없음
 
 - MVN: MOV와 유사하나 op2를 비트 반전하여 저장
-
-|MVN|`mvn Rd,operand2`|
-|---|:---|
-||`Rd := ~operand2`: Mov not 명령<br/> 어느 값의 1의 보수를 취할 때 쓰임 <br/> `mov r0,#0xffff03ff` -> `mvn r0,#0xfc00`으로 저장하는 것이 가능|
-
+	- `mvn Rd,operand2 == Rd := ~operand2`: Mov not 명령
+	- 어느 값의 1의 보수를 취할 때 쓰임
+	- `mov r0,#0xffff03ff` -> `mvn r0,#0xfc00`으로 저장하는 것이 가능
 - 앞의 논의와 더불어 어셈블러는 =상수를 ldr,mov,mvn 3가지 명령으로 자동 전환
 
 ```assembly
