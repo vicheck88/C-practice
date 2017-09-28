@@ -173,3 +173,40 @@
 	- 다른 함수를 호출하기 전 LR 값을 스택에 저장해놓아야
 
 ### 스택의 분류
+- 스택은 push 동작을 기준으로 4가지 타입으로 분류: FA,FD,EA,ED
+- ARM에서는 FD 스택을 사용
+
+![stack](https://azeria-labs.com/wp-content/uploads/2017/04/stacks.gif)
+![stack](https://azeria-labs.com/wp-content/uploads/2017/04/stack_types.png)
+
+출처: https://azeria-labs.com/functions-and-the-stack-part-7/
+
+### LR의 스택 대피
+- 레지스터 하나를 스택에 대피시키는 명령
+- LR은 스택포인터의 바로 위에 저장한 뒤 스택포인터를 LR위치로 이동
+	- `str lr,[sp,#-4]`
+- 후에 돌아갈 때 꺼내서 옮김
+	- `ldr lr,[sp],#4`
+
+```assembly
+	.global	Asm_Print_Good
+	Asm_Print_Good:
+
+		str		lr, [sp, #-4]! @현재 스택의 마지막 부분에 LR 저장
+
+		ldr		r0, =GPBCON
+		ldr		r1, [r0]
+		bic		r1, r1, #(0xFF << 14)
+		orr		r1, r1, #(0x55 << 14)
+		str		r1, [r0]
+
+		 bl		c_func
+
+		ldr		r0, =GPBDAT
+		ldr		r1, [r0]
+		orr		r1, r1, #(0xF<<7)
+		str		r1, [r0]
+
+		ldr		lr, [sp], #4 @LR 복원
+		mov		pc, lr
+```
