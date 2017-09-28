@@ -71,7 +71,114 @@
 	- 전역변수영역을 RAM에 저장해야 함(읽고 쓰기가 자유로워야)
 	- 그 외의 나머지 작업들은 RAM에 순서대로 할당
 	- RO Limit과 RW Base의 주소가 다름
+
 - RAM Loading
 	- 실행 프로그램을 RAM으로 복사
 	- 전역변수영역은 복사할 필요가 없으므로 바로 BSS를 비롯한 나머지 부분 할당
 	- RO Limit과 RW Base의 주소가 같음
+	- 따라서 컴파일러에게 RO base 주소만 알려주면 됨
+
+![XIP memory](http://www.keil.com/support/man/docs/armlink/armlink_pge1462449638742.png)
+
+XIP
+출처: http://www.keil.com/support/man/docs/armlink/armlink_pge1362065902090.htm
+
+![RAM loading memory](http://www.keil.com/support/man/docs/armlink/armlink_pge1462449626328.png)
+RAM Loading
+출처: http://www.keil.com/support/man/docs/armlink/armlink_pge1362065904825.htm
+
+### C Runtime Startup이 하는 일
+- XIP일 경우, 컴파일러에게 RO/RW base를 전부 알려주어야 함
+	- 초기화 정보를 램으로 복사
+- RAM Loading일 경우, 컴파일러에게 RO base를 알려주어야 함
+- 컴파일러로부터 RO limit, ZI base/limit의 정보를 받아야 함(사이의 영역을 0으로 초기화)
+- 다음으로, 스택을 준비하는 과정 필요
+- 마지막으로 C언어 프로그램으로 분기
+
+### XIP vs RAM Loaing
+- RAM Loading이 필요한 경우
+	- 테스트 & 디버깅: 읽고 쓰는 작업이 편해야함(XIP는 쓰기 작업이 힘듦)
+	- 고속 프로그램 실행: RAM은 빠름
+	- ROM에 있는 압축된 실행파일 실행: 압축을 RAM에 풀게 됨
+	- Non-Bootable 메모리(HDD,NAND,SD 등)에 있는 실행파일 실행
+	- 여러 응용 프로그램의 선택적 실행
+- XIP와 vs RAM Loading
+	- XIP: 빠른 부팅시간, 느린 실행 시간
+		- 프로그램을 적재하고 실행할 필요 없음
+	- RAM Loading: 빠른 실행 시간, 느린 부팅 시간
+		- 프로그램을 적재하고 실행해야 
+- Link Script File: 원하는 타입(XIP, RAM Loading)에 맞춰 컴파일에게 정보를 알려주는 파일
+- Make file: GCC는 Make file을 생성, 컴파일러로 실행파일을 생성
+
+### SP 레지스터와 스택 설정
+- R13(SP): stack-base 저장
+- 스택은 높은주소 -> 낮은 주소 순
+- Stack limit는 프로그래머가 관리
+
+### C 함수 분기
+- CRT0 코드가 구동되고 스택이 설정되면 main으로 분기
+
+```assembly
+	.extern Main
+	bl Main @서브루틴으로 메인 호출
+	b . @무한루프로 프로그램 종료
+```
+
+### Freestanding 방식의 문제점
+- 표준 라이브러리를 사용하기 위한 준비가 되어있지 않음
+- 설정이 제대로 되어있지 않을 경우 제대로 된 결과를 내지 못함
+
+### Hosted 방식의 CRT-Startup
+- Hosted 환경에서 프로그래머는 main부터 설계: C로만 작성
+- Hosted 환경의 CRT-startup은 기존의 작업 이외에도 힙 생성, 라이브러리 함수 초기화의 작업을 수행
+- 라이브러리 작업, 동적 할당 등의 작업 수행에 차질 생김
+
+### Heap 설치와 Locale 지정
+- heap, locale 설정을 직접 수행해야
+- Locale 설정
+	- 국가별로 다른 기호(화폐, 천단위 기호 등)을 지정하는 설정
+	- setlocale 함수를 실행하여 국가 지정: GCC는 한 종류만 지원
+- Heap 설정
+	- 원하는 Heap의 영역을 지정하고 메모리 할당 함수를 설계
+	- `_sbrk`: `malloc` 등의 함수가 메모리 할당을 위해 call back으로 호출
+
+### 컴파일러의 최적화와 volatile
+- 컴파일러는 자신의 판단을 통해 코드를 최적화하는 경우가 있음
+- 이 경우 코더가 의도한 결과를 내지 않을 수 있음
+- volatile을 통해 컴파일러가 최적화를 하지 않도록 할 수 있음
+- volatile의 사용 예
+	- 하드웨어 레지스터 제어
+	- 고정된 메모리에 정보를 저장하고 주고받을 때(IPC)
+
+```cpp
+	volatile int i;
+
+	#define GPBCON (*(volatile unsigned int *)0x56000010)
+	#define GPBDAT (*(volatile unsigned int *)0x56000014)
+
+	GPBCON = (GPBCON & ~0xFF<<14) | (0x55<<14);
+	GPBDAT = (GPBDAT & ~0xF<<7) | (0xA<<7);
+
+	for(;;)
+	{
+		GPBDAT ^= 0xf<<7;
+		for(i=0; i<0x100000; i++);
+		//volatile 선언이 되어있지 않을 경우 최적화되어 진행 X
+	}
+```
+
+### NAND Booting
+- NAND Flash는 기본적으로 부팅용으로 사용할 수 없음
+- NAND Booting을 위해서는 하드웨어, 소프트웨어적으로 특별한 기능이 필요
+- S3C2440 프로세서는 하드웨어적으로 NAND 부팅 지원
+- 부팅 과정
+	1. NAND Boot모드로 선택되고 리셋될 경우 ARM Core의 리셋을 잠시 중지
+	2. NAND Controller가 NAND의 초기 4KB를 내부 램으로 이동, 적재
+	3. 내부 램을 하드웨어적으로 ARM Core의 리셋벡터가 되도록 함
+	4. 이후 ARM Core 리셋하여 램의 코드를 실행하도록 함
+- 4KB의 역할
+	- 부트로더라 불리는 프로그램을 넣음
+	- 부트로더는 주변장치, 램, 클락 등을 초기화
+	- 이후 응용프로그램을 램에 올리는 초기작업을 수행, 프로그램이 램에 적재되도록 함
+	- 마지막으로 프로그램 실행
+
