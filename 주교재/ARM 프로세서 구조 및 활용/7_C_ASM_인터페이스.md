@@ -71,6 +71,7 @@
 - 어셈블리에서는 `.global` 선언으로 외부 참조가 가능하도록 허용
 
 ```assembly
+	@어셈블리
 	.global	Asm_Led_On
 	Asm_Led_On:
 
@@ -80,7 +81,7 @@
 		str		r1, [r0]
 		mov		pc, lr //함수 다음 값으로 이동
 
-		.global	Asm_Led_Off
+	.global	Asm_Led_Off
 	Asm_Led_Off:
 
 		ldr 	r0, =GPBDAT
@@ -90,6 +91,7 @@
 		mov		pc, lr
 ```
 ```cpp
+	//C언어
 	extern void Asm_Led_On(void); //어셈블리 명령어를 외부 함수로 사용
 	extern void Asm_Led_Off(void);
 
@@ -109,3 +111,65 @@
 		return 0;
 	}
 ```
+
+### C -> ASM -> C 호출
+- 여러번 호출하는 경우에는 Link Register값에 유의해야함
+
+```cpp
+	extern void Asm_Print_Err(void);
+
+	void c_func(void)
+	{
+		Uart_Printf("C-Function!\n");
+	} //3. 어셈으로 복귀
+
+	int Main(void)
+	{
+		Sys_Init("\nAPCS, C-ASM Interface Test #2\n");
+
+		// C -> ASM -> C 함수 호출
+		Asm_Print_Err(); // 1.어셈블리 호출(LR 변경)
+		Uart_Printf("\nReturned!\n");
+
+		return 0;
+	}
+```
+```assembly
+	.extern c_func
+
+	.global	Asm_Print_Err
+	Asm_Print_Err:
+
+		ldr		r0, =GPBCON
+		ldr		r1, [r0]
+		bic		r1, r1, #(0xFF << 14)
+		orr		r1, r1, #(0x55 << 14)
+		str		r1, [r0]
+
+		 bl		c_func @2. C 함수 호출(c_func)(LR 재변경)
+
+		ldr		r0, =GPBDAT @4. 복귀값
+		ldr		r1, [r0]
+		orr		r1, r1, #(0xF<<7)
+		str		r1, [r0]
+		mov		pc, lr @5. lr값이 달라져 bl 이후 구문으로 이동
+```
+
+- 함수가 중첩되어 링크 레지스터의 내용이 망가짐
+	- 스택에 임시 보관하여 필요할 때 꺼내야 함
+
+### Context Switching
+- Context: 환경 또는 상황정보
+	- Caller와 Callee는 동작 환경이 서로 다름
+	- 함수 전환 시 해당 함수의 환경이 유지되어야
+	- Callee와 Caller는 환경을 복원해야 하는 어느정도의 책임을 각자 가지고 있음
+- 함수의 context
+	- Caller가 사용하던 레지스터
+	- Callee 호출 직전의 스택 위치
+	- CPSR의 복원은 필요 없음
+- LR과 PC
+	- Caller의 복귀 위치로 PC값이 변경되어야 환경이 유지
+	- Callee가 다른 함수를 호출할 경우, 환경 복구가 불가: 리턴 불가
+	- 다른 함수를 호출하기 전 LR 값을 스택에 저장해놓아야
+
+### 스택의 분류
