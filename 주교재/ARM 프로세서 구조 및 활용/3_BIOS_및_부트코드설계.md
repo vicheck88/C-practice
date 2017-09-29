@@ -31,9 +31,9 @@
 - CPSR: Current Program Status Register
 	- 현재 CPU의 상태 저장
 
-![ARM Register](http://infocenter.arm.com/help/topic/com.arm.doc.kui0049a/armregs.png)
+![ARM Register](https://image.slidesharecdn.com/arm1-140401220608-phpapp02/95/the-arm-architecture-arm-arm-architecture-11-638.jpg?cb=1396390153)
 
-출처: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.kui0049a/gs_ma_arm.htm
+출처: https://www.slideshare.net/sreea4/arm-1
 
 ### 레지스터
 - 하드웨어를 제어하기 위해서는 수많은 레지스터를 사용해야 함

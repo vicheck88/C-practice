@@ -304,3 +304,122 @@
 
 ![LDM,STM in stack](https://image.slidesharecdn.com/arminstructionset-160408155037/95/arm-instruction-set-25-638.jpg?cb=1460213268)
 https://www.slideshare.net/MathivananNatarajan/arm-instruction-set-60665439
+
+### 예제
+```assembly
+	.global  Asm_Add_Sqr
+	Asm_Add_Sqr:
+	@ int Asm_Add_Sqr(int a, int b)@
+	@ {
+	@	return (Sqr(a)+Sqr(b))@
+	@ }
+	@ C의 함수인 Sqr()을 이용
+
+	stmfd sp!,{r4,r5,lr} @r4,r5,lr 저장(scratch register가 아닌 곳)
+
+	mov r5,r1 @r1을 r5로 이동
+	bl Sqr
+	mov r4,r0 @결과자료 대피이동
+	mov r0,r5 @두번째 자료 삽입
+
+	bl Sqr
+	add r0,r0,r4
+	ldmfd sp!,{r4,r5,pc} @대피자료 복귀
+```
+
+### LDR 명령의 데이터 타입 지정
+- 레지스터보다 작은 데이터의 LDR/STR을 위해 크기 옵션이 제공됨
+
+|기본 형식|`LDR(STR) {cond}{size} Rn,operand`|
+|---|---|
+|데이터 타입 지정|- B(unsigned byte),SB(signed byte),H(unsigned short),SH(signed short), 없으면 기본 4B<br/>- STR의 경우 4B 레지스터가 잘라 1B,2B 메모리에 저장: 부호가 의미가 없음<br/>- 따라서 SH,SB 옵션은 없음|
+
+```assembly
+	LDR		r0,[r1] @[r1]주소에서 int 로드
+	LDRB	r0,[r1] @[r1]주소에서 unsigned byte 로드
+	LDRSB	r0,[r1] @[r1]주소에서 signed byte 로드
+	LDRH	r0,[r1] @[r1]주소에서 unsigned short 로드
+	LDRSH	r0,[r1] @[r1]주소에서 signed short 로드
+
+	LDRSHHS	r0,[r1] @if HS, r0 :=(signed short)[r1]
+	LDRBEQ	r0,[r1] @if EQ, r0 :=(unsigned char)[r1]
+```
+
+### H,SH,SB 옵션의 제약사항
+- LDR,LDRB
+	- 사용법이 동일
+	- LDRB에서 8비트가 넘는 데이터는 사용 불가
+- LDRSB,LDRSH,LDRH
+	- 상수 대입, shift 불가
+- STR계열
+	- STR,STRB,STRH만 사용 가능
+- LDM,STM
+	- 4B 단위 이동만 가능
+- 크기 옵션으로 메모리를 레지스터로 로딩하는 경우 남은 공간 처리
+	- unsigned 옵션은 0으로 확장
+	- signed 옵션은 부호 확장
+
+### 함수 리턴 타입에 따른 정리
+- int리턴이 아니라면 결과 값이 저장된 R0를 정수 승격 시커야
+- 리턴값을 저장한 후 다음과 같은 코드 필요
+	- unsigned char: 상위 24비트를 전부 0으로
+		- `AND R0,R0,#0x000000FF`
+	- unsigned short: 상위 16비트를 전부 0으로
+		- `AND R0,R0,#0x0000FFFF`: 불가능(\#으로 표현 불가)
+		- `MOV R0,R0,LSL #16`,`MOV R0,R0,LSR #16`코드 작성
+	- signed char, short: 상위 비트를 원래 값의 부호 값으로 확장
+		- `MOV R0,R0, LSL #24`.`MOV R0,R0, ASR #24`: signed char
+		- `MOV R0,R0, LSL #16`,`MOV R0,R0, ASR #16`: signed short
+- int가 아닌 값을 리턴할 경우, 최적화에서 불리: 여분의 코드가 필요
+- 따라서 (un)signed int값으로 리턴하는 것이 가장 효율적
+
+### C의 전역변수, 배열, 포인터 공유
+- 함수처럼 `.extern`을 선언: ASM에서는 변수들의 주소로 사용 가능
+
+```assembly
+	.extern uc @unsigned char uc
+	.extern	sc @signed char sc
+	.extern	us @unsigned short us
+	.extern	ss @signed short ss
+
+	.global 	Asm_Var_Unsigned_Char
+Asm_Var_Unsigned_Char:
+
+	ldr 	r1, =uc
+	ldrb	r0, [r1] @변수들의 주소를 이용
+	add	 r0, r0, #1
+	strb	r0, [r1]
+	ldrb	r0, [r1]
+	mov 	pc, lr
+
+	.extern	a @int a
+	.extern	p @int *p
+	.extern  x @int x[4]
+
+	.global	Asm_Var_Access
+Asm_Var_Access:
+	
+	@int a, a+1 표현
+	ldr		r0, =a
+	ldr		r1, [r0]
+	add		r1, r1, #1
+	str		r1, [r0]
+	@int *p, (*P)+1 표현
+	ldr		r0, =p
+	ldr		r0, [r0]
+	ldr		r1, [r0]
+	add		r1, r1, #1
+	str		r1, [r0]
+	
+	@int x[4], 각 배열 요소의 값을 1씩 증가
+	mov		r2, #4
+	ldr		r0, =x
+1:
+	ldr		r1, [r0]
+	add		r1, r1, #1
+	str		r1, [r0], #4
+	subs	r2, r2, #1
+	bgt		1b
+
+	mov		pc, lr
+```
