@@ -341,8 +341,8 @@ https://www.slideshare.net/MathivananNatarajan/arm-instruction-set-60665439
 	LDRH	r0,[r1] @[r1]주소에서 unsigned short 로드
 	LDRSH	r0,[r1] @[r1]주소에서 signed short 로드
 
-	LDRSHHS	r0,[r1] @if HS, r0 :=(signed short)[r1]
-	LDRBEQ	r0,[r1] @if EQ, r0 :=(unsigned char)[r1]
+	LDRHSSH	r0,[r1] @if HS, r0 :=(signed short)[r1]
+	LDREQB	r0,[r1] @if EQ, r0 :=(unsigned char)[r1]
 ```
 
 ### H,SH,SB 옵션의 제약사항

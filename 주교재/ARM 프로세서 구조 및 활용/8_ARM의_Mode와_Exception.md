@@ -123,14 +123,14 @@
 	- watchdog timer를 리셋하지 못했을 때
 	- 들어오던 전원의 전압이 작아질 때(Brown out)
 
-	|Register|상태|
-	|---|---|
-	|모드|supervisor mode|
-	|LR,SPSR|모름(리셋 상태)|
-	|CPSR[4:0]|10011b|
-	|CPSR[5]|0(ARM state)|
-	|CPSR[7:6]|IRQ=1,FIQ=1(Disable)|
-	|PC|0x00000000|
+|Register|상태|
+|---|---|
+|모드|supervisor mode|
+|LR,SPSR|모름(리셋 상태)|
+|CPSR[4:0]|10011b|
+|CPSR[5]|0(ARM state)|
+|CPSR[7:6]|IRQ=1,FIQ=1(Disable)|
+|PC|0x00000000|
 
 - Handler 완료 후 동작
 	- 일반적인 프로그램 본문의 시작
