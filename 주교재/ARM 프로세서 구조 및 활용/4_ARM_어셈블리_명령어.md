@@ -68,7 +68,7 @@
         - 계산 후 r12,r1의 값은 그대로
     4. 레지스터 + shift(register)
         - `mov pc,r12,asr r1`: r12내용을 r1만큼 시프트하여 pc로 이동(arithmetic)
-        - `mov r0,r1,lsr r3`: r1내용을 r3만큼 왼쪽으로 시프트하여 r0으로 이동(logical)
+        - `mov r0,r1,lsr r3`: r1내용을 r3만큼 오른쪽으로 시프트하여 r0으로 이동(logical)
 
 
 
