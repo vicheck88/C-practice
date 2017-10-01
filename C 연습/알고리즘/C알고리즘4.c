@@ -442,3 +442,190 @@ int main(void)
 	hanoi(n, 1, 3);
 }
 #endif // 0
+
+#if 0
+//마을 위성사진II
+//마을의 위성사진을 본 철수는 평지와 호수로 나뉘어져 있다는 것을 알았다.
+//이 사진을 통해 호수가 몇 개가 있는지 파악하려고 한다.
+//상, 하, 좌, 우, 대각선으로 연결되어 있으면 하나의 호수로 간주한다면 철수의 마을에 몇 개의 호수가 있는지 파악할 수 있는 프로그램을 작성하자.
+
+//방향 배열을 주고, Flood fill 기법을 이용하여 문제 해결
+
+int N, a[100 + 10][100 + 10], chk[100 + 10][100 + 10], sol;
+int di[] = { -1, 1, 0, 0, -1, -1, 1, 1 };
+int dj[] = { 0, 0, -1, 1, -1, 1, -1, 1 };
+
+void Fill(int i, int j)
+{
+	int k, ni, nj;
+	if (chk[i][j] == 1) return;
+	chk[i][j] = 1;
+	for (k = 0; k < 8; k++)
+	{
+		ni = i + di[k]; nj = j + dj[k];
+		if (a[ni][nj] == 1)
+		{
+			Fill(ni, nj);
+		}
+	}
+}
+int main(void)
+{
+	int i, j;
+	scanf("%d", &N);
+	for (i = 1; i <= N; i++)
+	{
+		for (j = 1; j <= N; j++)scanf("%1d", &a[i][j]);
+	}
+	for (i = 1; i <= N; i++)
+	{
+		for (j = 1; j <= N; j++)
+		{
+			if (a[i][j] && !chk[i][j])
+			{
+				Fill(i, j);
+				sol++;
+			}
+		}
+	}
+	printf("%d", sol);
+	return 0;
+}
+#endif
+
+#if 0
+//당신은 M행, N열의 크기를 가진 행렬을 가지고 있고, 행렬은 1과 0의 세포로 이루어져 있다. 여기서 수직이든 수평이든 대각선 방향이든 인접한 두 개의 세포를 연결되어 있다고 표현하는데, 세포가 1인 것들은 서로 연결되어 하나의 구역을 이룬다.
+//행렬에는 몇 개의 구역이 있는데, 행렬에서 크기가 가장 큰 구역을 이루는 세포 1의 개수는 얼마인가?
+
+//Flood fill 함수를 int를 반환하게 만듦
+
+#include <stdio.h>
+int cell[15][15];
+int chk[15][15];
+int dirx[] = { -1, -1, -1, 0, 1, 1, 1, 0 };
+int diry[] = { -1, 0, 1, 1, 1, 0, -1, -1 };
+int cnt = 1;
+
+int fill(int i, int j)
+{
+
+	int k; int cnt = 1;
+	if (chk[i][j] == 1) return;
+	chk[i][j] = 1;
+	for (k = 0; k < 8; k++)
+	{
+		if (cell[i + dirx[k]][j + diry[k]])
+		{
+			if (!chk[i + dirx[k]][j + diry[k]])
+			{
+				//cnt++;
+				cnt += fill(i + dirx[k], j + diry[k]);
+			}
+		}
+	}
+	return cnt;
+}
+
+
+int main(void)
+{
+	int row, col;
+	int max = 0;
+	int cnt;
+	int i, j;
+	scanf("%d\n%d", &row, &col);
+	for (i = 1; i <= row; i++)
+	{
+		for (j = 1; j <= col; j++) scanf("%d", &cell[i][j]);
+	}
+
+	for (i = 1; i <= row; i++)
+	{
+		for (j = 1; j <= col; j++)
+		{
+			if (cell[i][j] && !chk[i][j])
+			{
+				cnt = fill(i, j);
+				if (cnt > max) max = cnt;
+				//cnt = 1;
+			}
+		}
+	}
+	printf("%d", max);
+	return 0;
+}
+#endif
+
+#if 0
+//단지 번호붙이기
+#include <stdio.h>
+int map[30][30];
+int danji[20];
+int cnt = 1;
+int cnt_all = 1;
+int chk[30][30];
+int dirr[] = { 0, -1, 0, 1 };
+int dirc[] = { -1, 0, 1, 0 };
+
+void fill(int i, int j)
+{
+	int k;
+	int ni, nj;
+	if (chk[i][j] == 1) return;
+	chk[i][j] = 1;
+	for (k = 0; k < 4; k++)
+	{
+		ni = i + dirr[k];
+		nj = j + dirc[k];
+		if (map[ni][nj] && !chk[ni][nj])
+		{
+			cnt++;
+			fill(ni, nj);
+		}
+	}
+}
+
+int main(void)
+{
+	int i, j, k = 0;
+	int n;
+	int tmp;
+	scanf("%d", &n);
+	for (i = 1; i <= n; i++)
+	{
+		for (j = 1; j <= n; j++) scanf("%1d", &map[i][j]);
+	}
+	for (i = 1; i <= n; i++)
+	{
+		for (j = 1; j <= n; j++)
+		{
+			if (map[i][j] && !chk[i][j])
+			{
+				fill(i, j);
+				k++;
+				danji[k] = cnt;
+				cnt = 1;
+			}
+		}
+	}
+
+	for (i = 1; i < k; i++)
+	{
+		for (j = i + 1; j <= k; j++)
+		{
+			if (danji[i]>danji[j])
+			{
+				tmp = danji[i];
+				danji[i] = danji[j];
+				danji[j] = tmp;
+			}
+		}
+	}
+
+	printf("%d\n", k);
+	for (i = 1; i <= k; i++)
+	{
+		printf("%d\n", danji[i]);
+	}
+}
+#endif
