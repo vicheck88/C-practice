@@ -13,9 +13,9 @@
 - PLL
 	- PLL은 CPU의 클락을 높이는 역할 수행
 	- 설정하지 않을 경우 낮은 주파수로 CPU 동작
-	- 활성화를 통해 CPU의 주파수를 높여야(FLCK)
-	- CPU 이외에도 여러 버스에 사용하기 위해 분주작업 또한 필요(HCLK,PLCK)
-	- FCLK,HCLK,PCLK의 비율은 1:3:6 또는 1:4:8로 설정
+	- 활성화를 통해 CPU의 주파수를 높여야(FCLK)
+	- CPU 이외에도 여러 버스에 사용하기 위해 분주작업 또한 필요(HCLK,PCLK)
+	- FCLK,HCLK,PCLK의 분주비율은 1:3:6 또는 1:4:8로 설정
 - Interrupt
 	- 프로그램을 실행하는 도중 예기치 못한 상황이 발생하였을 때 발생한 상황을 먼저 처리한 뒤 원래 작업으로 복귀하는 것
 	- 초기화 작업중에는 아직 인터럽트 서비스 루틴이 생성되어있지 않음
@@ -51,8 +51,7 @@
 출처: https://superuser.com/questions/703695/difference-between-port-mapped-and-memory-mapped-access
 
 ### Load, Store 개념
-- 레지스터를 제어하기 위해서는 어셈블리를 다루어야 함
-- MOV 명령
+- MOV
 	- ARM에서 연산은 레지스터 사이에서만 일어남
 	- MOV는 레지스터간 데이터 복사에 사용되는 명령(`MOV R0,R1`: R1 내용을 R0에 복사)
 - 주변장치 제어
@@ -73,7 +72,7 @@
 |활용 예|`LDR r0,=100`<br/>`ldr r1,=-200`<br/>`LDR R13,=0x1e3c`<br/>`ldr R15,=-0x1ff`|
 ||R15에 로드: 다음 명령 주소 혹은 분기명령 의미|
 |Address label|label은 모두 주소 값이 됨(해당 label 위치의 주소)<br/>label은 첫 칸부터 기입|
-||`HERE: MOV r0, #10`<br/>`STR r0,[r1]`<br/>`LDR pc, =HERE`|
+|활용 예|`HERE: MOV r0, #10`<br/>`STR r0,[r1]`<br/>`LDR pc, =HERE`|
 ||pc(R15)에 HERE명령의 주소(`MOV r0,#10`)를 기입: <br/>해당 명령을 다시 수행하며 결국 무한루프|
 
 ### 레지터스 간접참조, LDR STR
@@ -96,7 +95,7 @@ Rd = *Rs; //LDR Rd,[Rs]
 
 ### WDT 레지스터
 - WDT를 Disable하려면 WTCON 레지스터의 비트 필드 설정을 바꾸어야
-- WDT는 Periperal로, 따라서 WTCON 레지스터는 메모리로 인식, CPU에서 접근
+- WDT는 주변장치이므로 WTCON 레지스터는 메모리로 인식됨
 
 ![WTCON](http://www.ntrexgo.com/wp-content/uploads/2013/05/18feajkarm001.jpg)
 
@@ -104,10 +103,11 @@ Rd = *Rs; //LDR Rd,[Rs]
 
 ### WDT 제어
 - 0x53000000번지에 0을 대입
+
 ```assembly
-ldr r0,=0x53000000
-ldr r1,=0x0
-str r1,[r0]
+    ldr r0,=0x53000000
+    ldr r1,=0x0
+    str r1,[r0]
 ```
 
 ### ARM920T Coprocessor
@@ -115,14 +115,13 @@ str r1,[r0]
 - 캐시, MMU, GPU 등 다양하게 존재
 
 ### Coprocessor 액세스
-- 코프로세서는 주변장치와 달리 별도의 포트로 CPU에 연결(Port Mapped IO)
-- 코프로세서는 CPU와 독립적인 별도 CPU로 볼 수 있음
+- 코프로세서는 CPU와 독립적인 별도 CPU로 볼 수 있으며, 별도의 포트로 CPU에 연결(Port Mapped IO)
 - ARM CPU는 CP0 ~ CP15를 통해 코프로레서에 접근, 제어
 - 이들의 역할은 지정되어있으며, ARM920T는 CP15만 가지고 있음
 	- CP15를 이용하여 MMU, 캐시, Write Buffer를 제어
 
 ### CP15: System Control Coprocessor
-- CP15에는 C0 ~ C15가 있으며 이들은 다시 여러 개의 레지스터로 구성됨
+- CP15에는 C0 ~ C15가 있으며 이들은 다시 여러개의 레지스터로 구성
 - 기존 LDR, STR, MOV 명령으로는 코프로세서에 접근 불가: 별도의 명령이 존재
 - MCR, MRC를 이용하여 접근
 	- MCR: 코프로세서 -> 레지스터
