@@ -85,3 +85,25 @@
 ![RS232C modulation](https://arcelect.com/RS232_signals.gif)
 
 출처: https://arcelect.com/rs232.htm
+
+### S3C2440의 UART
+- S3C2440에는 3개 채널의 UART 존재
+- UART는 실제 통신용 이외에도 디버깅용으로 많이 사용
+	- 임베디드 환경에서는 printf함수를 사용할 수 없음(모니터가 없음)
+	- RxD, TxD, GND를 연결하여 원하는 내용을 인쇄하는 용도로 사용
+
+### UART의 하드웨어 구조, flag
+- UART는 상태에 따른 flag, TX, RX, Buffer를 이용하여 데이터 송수신 수행
+- 자료를 보내는 과정
+1. 전송 데이터가 TX Buffer로 이동
+	- TX_Empty_Flag는 버퍼가 비었는지의 여부 확인
+2. 버퍼에서 데이터가 TX shifter로 이동, 데이터 전송
+	- Tx_Empty_Flag는 shifter가 비었는지를 체크
+	- Tx_Empty_Flag가 완전히 비었을 때 전송이 완료됨을 의미
+3. 보낸 데이터를 RX Shifter로 보내 데이터를 모음
+	- Rx_Error_Flag는 수신 때 발생하는 에러 여부 체크
+	- 버퍼가 차 있은데 데이터를 이동시킬 경우 등
+4. 데이터 프레임이 다 모이면 RX 버퍼로 데이터를 보냄
+	- Rx_Full_Flag는 버퍼에 수신된 데이터가 들어왔는지 여부 체크
+5. 버퍼의 내용을 읽어들임
+- 모든 과정은 한 클락이 생성될 때 수행됨
