@@ -170,7 +170,7 @@
 		Macro_Write_Block(rGPFCON,0xff,0,8);
 		Macro_Write_Block(rGPFCON,0x3,0,0);
 		//Key_out0,1(GPC8,9): input
-		Macro_Write_Block(rGPCCON,0xff,0,16);
+		Macro_Write_Block(rGPCCON,0xf,0,16);
 	}
 
 	#define DELAY_VALUE (0x100000)
