@@ -112,6 +112,7 @@
 
 	void Main(void)
 	{
+		int led;
 		Led_Init();
 
 		// KEY_OUT1 -> OUT, 0 값 출력 (GPC9)
@@ -125,9 +126,10 @@
 		{
 			// KEY_IN0~3을 확인하고 눌린 키가 있으면 해당하는 LED ON, 안 눌렸으면 OFF
 			//GPF[7:4]
-			Macro_Write_Block(rGPBDAT, 0xf, ((rGPFDAT>>4) & 0xf), 7);
+			//Macro_Write_Block(rGPBDAT, 0xf, ((rGPFDAT>>4) & 0xf), 7);
+			Led_Display((~(rGPFDAT>>4))&0xf);
 			//스위치와 연관된 4개의 비트를 마스킹하여 led 레지스터에 기입
-			
+
 			//잘못된 예
 		//	if(Macro_Check_Bit_Clear(rGPFDAT,4)) Led_Display(1);
 		//	if(Macro_Check_Bit_Clear(rGPFDAT,5)) Led_Display(2);
@@ -137,6 +139,89 @@
 			//제대로 작동하는 듯 보이지만 사실은 제대로 작동하지 않음
 			//Led_Display는 지정한 부분 이외의 모든 led를 끄는 작업
 			//사실 동시에 켜진 것이 아니라 꺼지고 켜지는게 계속 반복됨
+
+			//위의 예를 고친 답
+			led=0;
+			if(Macro_Check_Bit_Clear(rGPFDAT,4)) led |= (1<<0);
+			if(Macro_Check_Bit_Clear(rGPFDAT,5)) led |= (1<<1);
+			if(Macro_Check_Bit_Clear(rGPFDAT,6)) led |= (1<<2);
+			if(Macro_Check_Bit_Clear(rGPFDAT,7)) led |= (1<<3);
+			Led_Display(led);
+			//led값을 or 연산으로 업데이트하여 반영: 제대로 움직임
 		}
+	}
+```
+
+### 방향키와 switch (key matrix)
+- 방향키 역시 같은 방법으로 조작 가능
+- 방향키와 스위치키의 입력값은 동일(key_in0 ~ key_in3)하며 out값만 다름
+- 방향키와 스위치를 구분하는 방법이 필요함
+- key_out값을 변화시킴으로써 구분 가능(한쪽 out부분을 floating 상태로)
+- floating 상태로 변환하는 기능은 없으며 대신 한쪽 부분을 in 상태로 변환
+
+```cpp
+	//키 인식 디바이스 드라이버
+	#include "2440addr.h"
+	#include "macro.h"
+
+	void Key_Poll_Init(void) //초기화 과정
+	{
+		//Key_In 0~3(GPF[7:4]), Key_Push(GPF0) : input
+		Macro_Write_Block(rGPFCON,0xff,0,8);
+		Macro_Write_Block(rGPFCON,0x3,0,0);
+		//Key_out0,1(GPC8,9): input
+		Macro_Write_Block(rGPCCON,0xff,0,16);
+	}
+
+	#define DELAY_VALUE (0x100000)
+	#define CHATTERING_CNT (1000)
+	int lut[]={1,2,1,3,1,2,1,4,1,2,1,3,1,2,1,0}; //룩업 테이블
+	int Key_Get_Pressed(void) //키가 눌렸을 때 눌린 번호 출력
+	{
+		volatile int i;
+		int key;
+		//Key_out0 -> 0, Key_out1 ->입력(조이스틱)
+		Macro_Write_Block(rGPCCON,0xf,1,16);
+		//Key_out0에 0 입력
+		Macro_Clear_Bit(rGPCDAT,8);
+		for(i=0;i<DELAY_VALUE;i++); //딜레이 발생
+		if(Macro_Check_Bit_Clear(rGPFDAT,0)) return 9; //push키 리턴
+		key = Macro_Extract_Area(rGPFDAT,0xf,4);
+		if(key != 0xf) //키가 눌렷을 때
+		{
+			//채터링 작업
+			for(i=0;i<CHATTERING_CNT;i++)
+			{
+				if(key!=Macro_Extract_Area(rGPFDAT,0xf,4)) return 0;
+			}
+			return lut[key];
+		}
+
+		//Key_out0 -> 입력, Key_out1 ->0(스위치)
+		Macro_Write_Block(rGPCCON,0xf,0x4,16);
+		//Key_out1에 0 입력
+		Macro_Clear_Bit(rGPCDAT,9);
+		for(i=0;i<DELAY_VALUE;i++); //딜레이 발생
+		key = Macro_Extract_Area(rGPFDAT,0xf,4);
+		if(key != 0xf) //키가 눌렷을 때
+		{
+			//채터링 작업
+			for(i=0;i<CHATTERING_CNT;i++)
+			{
+				if(key!=Macro_Extract_Area(rGPFDAT,0xf,4)) return 0;
+			}
+			return lut[key]+4;
+		}
+		return 0;
+	}
+	void Key_Wait_Key_Released(void) //눌리는 동안 무한 대기
+	{
+		while(Key_Get_Pressed());
+	}
+	int Key_Wait_Key_Pressed(void) //눌리지 않는 동안 무한 대기
+	{
+		int key;
+		while(!(key=Key_Get_Pressed()));
+		return key;
 	}
 ```
