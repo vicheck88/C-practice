@@ -52,6 +52,8 @@
 	- lock 변수를 통해 키가 눌렸을 때 lock을 1로, 아닐 때 0으로 만듦
 	- 한 번 이상 작업을 못하도록 조치
 	- wait key released 방식과 달리 다른 작업을 동시에 수행 가능
+- 두 가지의 방법으로도 문제가 해결되지 않을 수 있음: chattering현상
+	- 하드웨어, 소프트웨어적인 방법을 통해 문제를 해결
 
 ```cpp
 	#include "2440addr.h"
@@ -91,6 +93,50 @@
 			}
 			else if(lock && Macro_Check_Bit_Set(rGPFDAT,4)) lock=0;
 			//키가 다 눌린 후 lock을 원래대로 되돌림
+			Uart_Printf("%d\n",i++);
+			i%=10;
+			//inter-lock 방식을 사용할 경우, 다른 작업에 영향을 미치지 않음
+			//wait-key-released방식을 사용할 경우, 키의 눌림여부에 따라 방해를 받음
+		}
+	}
+```
+
+### Switch key
+- 스위치 8 ~ 11 역시 같은 방법으로 작동 가능
+- 스위치를 누를 때 해당 led가 on 되는 결과를 얻고 싶을 때
+
+```cpp
+	#include "2440addr.h"
+	#include "device_driver.h"
+	#include "macro.h"
+
+	void Main(void)
+	{
+		Led_Init();
+
+		// KEY_OUT1 -> OUT, 0 값 출력 (GPC9)
+		rGPCCON = Macro_Write_Block(rGPCCON,0x3,0x1,18);//GPCCON9[19:18]
+		rGPCDAT = Macro_Clear_Bit(rGPCDAT,9);//GPCDAT[9]
+
+		// KEY_IN0~3 -> IN (GPF[15:8])
+		rGPFCON = Macro_Clear_Area(rGPFCON,0xff,8);
+
+		for(;;)
+		{
+			// KEY_IN0~3을 확인하고 눌린 키가 있으면 해당하는 LED ON, 안 눌렸으면 OFF
+			//GPF[7:4]
+			Macro_Write_Block(rGPBDAT, 0xf, ((rGPFDAT>>4) & 0xf), 7);
+			//스위치와 연관된 4개의 비트를 마스킹하여 led 레지스터에 기입
+			
+			//잘못된 예
+		//	if(Macro_Check_Bit_Clear(rGPFDAT,4)) Led_Display(1);
+		//	if(Macro_Check_Bit_Clear(rGPFDAT,5)) Led_Display(2);
+		//	if(Macro_Check_Bit_Clear(rGPFDAT,6)) Led_Display(4);
+		//	if(Macro_Check_Bit_Clear(rGPFDAT,7)) Led_Display(8);
+		//	Led_Display(0);
+			//제대로 작동하는 듯 보이지만 사실은 제대로 작동하지 않음
+			//Led_Display는 지정한 부분 이외의 모든 led를 끄는 작업
+			//사실 동시에 켜진 것이 아니라 꺼지고 켜지는게 계속 반복됨
 		}
 	}
 ```
