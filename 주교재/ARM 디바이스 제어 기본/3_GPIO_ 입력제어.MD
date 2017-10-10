@@ -51,6 +51,7 @@
 - 해결 방안 2: inter-lock 방식
 	- lock 변수를 통해 키가 눌렸을 때 lock을 1로, 아닐 때 0으로 만듦
 	- 한 번 이상 작업을 못하도록 조치
+	- wait key released 방식과 달리 다른 작업을 동시에 수행 가능
 
 ```cpp
 	#include "2440addr.h"
@@ -71,20 +72,25 @@
 		rGPFCON= Macro_Clear_Area(rGPFCON, 0x3, 8);
 		for(;;)
 		{
-			// UP(GPF4)가 눌리면 LED1 Toggling
+			//UP(GPF4)가 눌리면 LED1 Toggling
+
+			//Wait-key-Released 방식
 	//		if(Macro_Check_Bit_Clear(rGPFDAT,4))
 	//		{
 	//			Led_Display(bit^=1);
 	//			while(Macro_Check_Bit_Clear(rGPFDAT,4));
+	//			//눌려있는 동안 지속: 다른 작동을 금지하여 led 안정화
 	//		}
-			//Wait-key-Released 방식
+
+			//Inter lock 방식
 			if(!lock && Macro_Check_Bit_Clear(rGPFDAT,4))
 			{
 				lock=1;
+				//한번 작동 후 lock을 1로 변화: 해당 조건문에 들어가지 못함
 				Led_Display(bit^=1);
 			}
 			else if(lock && Macro_Check_Bit_Set(rGPFDAT,4)) lock=0;
-			//Inter lock 방식
+			//키가 다 눌린 후 lock을 원래대로 되돌림
 		}
 	}
 ```
