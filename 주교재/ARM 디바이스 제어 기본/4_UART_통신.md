@@ -107,3 +107,61 @@
 	- Rx_Full_Flag는 버퍼에 수신된 데이터가 들어왔는지 여부 체크
 5. 버퍼의 내용을 읽어들임
 - 모든 과정은 한 클락이 생성될 때 수행됨
+- 송수신 버퍼는 원활한 송수신을 위해 주로 FIFO방식으로 구성
+
+![Buffer](http://cfile9.uf.tistory.com/image/146B52274BD825359E81BB)
+
+출처: http://changkyun.tistory.com/entry/UART-Device
+
+### S3C24440의 UART
+- APB버스를 이용: PCLK를 이용하여 클락을 발생(분주)
+- PCLK을 이용하여 원하는 속도를 얻지 못할 경우, UEXTCLK기능을 이용하여 별도로 클락 발생
+
+### UART 기본 설정 함수
+```cpp
+	void Uart_Init(int baud)
+	{
+		// PORT GPIO initial
+		Macro_Write_Block(rGPHCON, 0xf, 0xa, 4); //RxD,TxD 사용 설정
+
+		rUFCON0 = 0x0; //FIFO 사용 안함
+		rUMCON0 = 0x0; //Flow Control 사용 안함
+		rULCON0 = 0x3; //data bit 8비트, stop bit 0비트, 패리티 사용 안함
+		rUCON0  = 0x245; //Polling 모드 설정
+		rUBRDIV0= ((unsigned int)(PCLK/16./baud+0.5)-1 );
+		//분주를 통해 원하는 통신속도 획득
+	}
+
+	Uart_Init(115200) //메인함수에서 실행, UART 초기화
+```
+
+### UART Echo Back
+- PC에서 들어온 글자를 다시 PC로 전송하기
+- 엔터키를 누를 경우 맨 앞줄로 이동
+	- 캐리지 리턴에 해당하는 코드이기 때문
+	- 터미널 상에서 캐리지 리턴으로 보내도록 설정되어있음: 수정 가능
+
+```cpp
+	void Main(void)
+	{
+		unsigned char x;
+
+		Uart_Init(115200);
+		Led_Init();
+		Key_Poll_Init();
+
+		Uart_Printf("Uart Echo Back Test\n");
+
+		for(;;)
+		{
+			if(Macro_Check_Bit_Set(rUTRSTAT0,0))
+			{
+				x = rURXH0;
+				while(Macro_Check_Bit_Clear(rUTRSTAT0,1));
+				//송신까지 시간이 오래 안걸림: 다른 작업을 병렬적으로 수행 가능
+				rUTXH0 = x;
+			}
+		}
+	}
+```
+
