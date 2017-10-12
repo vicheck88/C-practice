@@ -130,3 +130,39 @@
 		}
 	}
 ```
+
+### 타이머 Repeat 함수
+- Auto reload 기능을 이용할 경우, 자동으로 타이머가 갱신됨
+
+```cpp
+	void Timer0_Repeat(int time)
+	{
+		// 20usec tick (50KHz)로 Prescaler와 MUX 설정
+		Macro_Write_Block(rTCFG0,0xff,(int)(PCLK/50000./4+0.5)-1,0);
+		Macro_Write_Block(rTCFG1,0xf,1,0);
+		// TCNTB0에 주어진 time(msec 단위) 지연 시간 설정
+		rTCNTB0 = time*TIMER0_PULSE_FOR_1MS;
+		// SRCPND 레지스터 해당 비트 PENDING Clear
+		rSRCPND = 1<<10;
+		// Manual Update ON & TImer OFF
+		Macro_Write_Block(rTCON,0xf,2,0);
+		// Manual Update OFF & TImer ON, Auto Reload ON
+		Macro_Write_Block(rTCON,0xf,9,0);
+	}
+
+	int Timer0_Check_Timeout(void)
+	{
+		// Timer가 Expired 되었으면 Pending Clear하고 1 리턴
+		if(Macro_Check_Bit_Set(rSRCPND,10))
+		{
+			rSRCPND = 1<<10; return 1;
+		}
+		// Timer가 Expired 되지 않았으면 0 리턴
+		return 0;
+	}
+	void Timer0_Stop(void)
+	{
+		// Timer0 Stop
+		Macro_Clear_Bit(rTCON,0);
+	}
+```
