@@ -23,7 +23,7 @@
 
 출처: http://blog.csdn.net/XscKernel/article/details/38736177
 
-### 타이머의 기본 구조
+### 타이머0의 기본 구조
 - TCNTB0: 버퍼로, 타이머 동작을 위한 초기값 저장
 - Timer0: 16비트 down counter로 0이 될 때 TCNTB0에서 값을 가지고 와 다시 동작
 - TCNTO0: 타이머의 값이 감소될 때마다 값을 저장하는 레지스터
