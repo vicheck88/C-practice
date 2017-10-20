@@ -1166,6 +1166,7 @@ int main(void)
 
 #if 0
 #include <stdio.h>
+#include <string.h>
 #define INF 0x7f000000
 #define MIN(x,y) ((x)>(y)?(y):(x))
 int T;
@@ -1177,6 +1178,8 @@ int min = INF;
 
 void input(void)
 {
+	memset(mat, 0, sizeof(mat));
+	memset(tmp, 0, sizeof(tmp));
 	int i, j;
 	scanf("%d %d %d", &row, &col, &K);
 	for (i = 1; i <= row; i++)
@@ -1191,7 +1194,7 @@ void input(void)
 
 int check(void)
 {
-	int i, j, cnt, test = 0;
+	int i, j, cnt;
 	for (j = 1; j <= col; j++)
 	{
 		cnt = 1;
@@ -1200,31 +1203,32 @@ int check(void)
 			if (mat[i][j] == mat[i - 1][j])
 			{
 				cnt++;
-				if (cnt >= K)
-				{
-					test++;
-					break;
-				}
+				if (cnt >= K) goto back;
 			}
 			else cnt = 1;
 		}
-		cnt = 1;
+		if(cnt<K) return 0;
+	back:;
 	}
-	if (test < col) return 0;
 	return 1;
 }
+
 
 
 void DFS(int n, int cnt)
 {
 	int i, j;
-	if (cnt > min) return;
-	if (n > row) return;
-	if (check())
+	if (cnt >= min) return;
+	if (cnt > row) return;
+	if (n >= row)
 	{
-		min = MIN(min, cnt);
+		if (check())
+		{
+			min = MIN(min, cnt);
+		}
 		return;
 	}
+	
 	for (j = 1; j <= col; j++) mat[n + 1][j] = 1;
 	DFS(n + 1, cnt + 1);
 	for (j = 1; j <= col; j++) mat[n + 1][j] = 0;
@@ -1450,7 +1454,7 @@ int main(void)
 알파벳 소문자는 열쇠를 나타내며, 그 문자의 대문자인 모든 문을 열 수 있다.
 마지막 줄에는 상근이가 이미 가지고 있는 열쇠가 공백없이 주어진다. 만약, 열쇠를 하나도 가지고 있지 않는 경우에는 "0"이 주어진다.
 상근이는 빌딩 밖으로 나갈 수 있다. 각각의 문에 대해서, 그 문을 열 수 잇는 열쇠의 개수는 0개, 1개, 또는 그 이상이고, 각각의 열쇠에 대해서, 그 열쇠로 열 수 있는 문의 개수도 0개, 1개, 또는 그 이상이다. 열쇠는 여러 번 사용할 수 있다.*/
-#if 01
+#if 0
 int T;
 int key_ind[30];
 char key[30];
@@ -1550,4 +1554,776 @@ int main(void)
 }
 #endif // 01
 
+//Shortest Path Faster 
+/*정점의 개수가 N개이고 간선의 개수가 M개인, 가중치가 있는 무방향 그래프에서 출발 정점의 번호과 도착 정점의 번호가 주어진다.
+출발 정점에서 도착 정점에 이르는 최단경로의 길이를 출력하는 프로그램을 작성하시오.
+주어지는 그래프는 하나의 연결 그래프임이 보장된다.
+[제약 사항]
+1. 1≤N≤100,000, N-1≤M≤300,000
+2. 각 간선의 가중치는 1,000,000 이하인 양의 정수
+[입력]
+1. 입력의 가장 첫 줄에는 총 테스트 케이스의 개수 T가 주어진다.
+2. 그 다음 줄에 정점의 개수 N과 간선의 개수 M이 공백으로 구분되어 주어진다.
+3. 다음 M개 줄에는 간선의 시작점과 끝점, 가중치가 순서대로 공백을 사이에 두고 주어진다.
+[출력]
+각 테스트 케이스마다 ‘#x’(x는 테스트케이스 번호를 의미하며 1부터 시작한다)를 출력하고, 최단 경로의 길이를 출력한다.
+*/
+#if 0
+#include <stdio.h>
+#define SWAP(x,y) {EDGE (t)=(x);(x)=(y);(y)=(t);}
+#define INF 0x7f000000
+#define que 1000000
+int T;
+int N, M;
+int chk[100010];
+int edge_chk[300010];
+int start, end;
+typedef struct
+{
+	int v, d;
+}Q_t;
+Q_t Q[que];
+typedef struct
+{
+	int s, e, w;
+}EDGE;
+EDGE edge[300010];
 
+void qsort(int s,int e)
+{
+	if (s >= e) return;
+	int left = s, target = s, pivot = e;
+	for (left = s; left < e; left++)
+	{
+		if ((edge[left].s < edge[pivot].s) || (edge[left].s==edge[pivot].s &&
+			edge[left].s<edge[pivot].e))
+		{
+			SWAP(edge[left], edge[target]); target++;
+		}
+	}
+	SWAP(edge[target], edge[pivot]);
+	qsort(s, target - 1); qsort(target + 1, e);
+}
+
+void input(void)
+{
+	int i;
+	scanf("%d %d %d %d", &N, &M, &start, &end);
+	for (i = 0; i < M; i++)
+	{
+		scanf("%d %d %d", &edge[i].s, &edge[i].e, &edge[i].w);
+		if (edge[i].s>edge[i].e)
+		{
+			int t = edge[i].s; edge[i].s = edge[i].e; edge[i].e = t;
+		}
+	}
+	for (i = 1; i <= N; i++) chk[i] = INF;
+	qsort(0,M-1);
+}
+
+
+
+
+void clear(void)
+{
+	int i;
+	for (i = 0; i <= N; i++)
+	{
+		chk[i] = INF;
+		edge_chk[i] = 0;
+	}
+	for (i = N + 1; i < M; i++) edge_chk[i] = 0;
+}
+
+int BFS(int n)
+{
+	int k;
+	int wp = 0, rp = 0;
+	Q_t tmp;
+	Q[wp].v = n, Q[wp++].d = 0; chk[n] = 0;
+	while (rp < wp)
+	{
+		tmp = Q[rp++];
+		for (k = 0; k <M; k++)
+		{
+			if (edge[k].e < tmp.v) continue;
+			else if (edge[k].s>tmp.v) break;
+			if (edge[k].e == tmp.v && edge[k].w+tmp.d<chk[edge[k].s] && !edge_chk[k])
+			{
+				Q[wp].v = edge[k].s;
+				Q[wp].d = edge[k].w + tmp.d;
+				chk[edge[k].s] = Q[wp++].d;
+				edge_chk[k] = 1;
+			}
+			else if (edge[k].s == tmp.v && edge[k].w + tmp.d < chk[edge[k].e] && !edge_chk[k])
+			{
+				Q[wp].v = edge[k].e;
+				Q[wp].d = edge[k].w + tmp.d;
+				chk[edge[k].e] = Q[wp++].d;
+				edge_chk[k] = 1;
+			}
+		}
+	}
+	return chk[end];
+}
+
+int main(void)
+{
+	int i=1;
+	scanf("%d", &T);
+	while (T--)
+	{
+		input();
+		clear();
+		printf("#%d %d\n", i++, BFS(start));
+	}
+}
+#endif // 01
+
+//페그 솔리테어
+/*프랑스 왕 루이 14세때 궁정에서 인기있는 게임인 페그 솔리테어는 다음과 같은 규칙을 가지고 있다. 구멍이 뚫려있는 이차원 게임 판에서 하는 게임으로 각 구멍에는 핀을 하나 꽂을 수 있다.
+핀은 인접한 핀을 뛰어 넘어서 그 핀의 다음 칸으로 이동할 수 있다. 인접한 핀이란 현재 핀의 상하좌우에 있는 핀을 의미한다. 인접한 핀의 다음 칸은 비어있어야 하며 그 인접한 핀은 제거한다.
+현재 게임 판에 꽂혀있는 핀의 상태가 주어지면, 핀을 적절히 움직여서 게임 판에 남아있는 핀의 개수를 최소로 하려고 한다. 또, 그렇게 남기기 위해 필요한 최소 이동횟수를 구하는 프로그램을 작성하시오.*/
+#if 0
+#include <stdio.h>
+int T;
+int mat[7][11];
+int cnt;
+int max;
+int dirow[4] = { -1, 1, 0, 0 };
+int dicol[4] = { 0, 0, -1, 1 };
+void input(void)
+{
+	int i, j;
+	char c;
+	for (i = 1; i <= 5; i++)
+	{
+		for (j = 1; j <= 9; j++)
+		{
+			scanf(" %c", &c);
+			mat[i][j] = (int)c;
+			if (mat[i][j] == 'o') cnt++;
+		}
+	}
+}
+
+void DFS(int n)
+{
+	int i, j,k,ni,nj,nni,nnj;
+	if (max < n) max = n;
+	if (n >= cnt) return;
+	for (i = 1; i <= 5; i++)
+	{
+		for (j = 1; j <= 9; j++)
+		{
+			if (mat[i][j] != 'o') continue;
+			for (k = 0; k < 4; k++)
+			{
+				ni = i + dirow[k], nj = j + dicol[k];
+				nni = ni + dirow[k], nnj = nj + dicol[k];
+
+				if (nni < 1 || nni>5 || nnj < 1 || nnj>9) continue;
+				if (mat[ni][nj] != 'o') continue;
+				if (mat[ni][nj] == 'o' && mat[nni][nnj] != '.') continue;
+
+				mat[i][j] = mat[ni][nj] = '.';
+				mat[nni][nnj] = 'o';
+				DFS(n + 1);
+
+				mat[i][j] = mat[ni][nj] = 'o';
+				mat[nni][nnj] = '.';
+			}
+		}
+	}
+}
+
+
+int main(void)
+{
+	scanf("%d", &T);
+	while (T--)
+	{
+		cnt = max = 0;
+		input();
+		DFS(0);
+		printf("%d %d\n", cnt - max, max);
+	}
+}
+#endif // 01
+
+//부분집합의 합
+//N개의 정수로 이루어진 집합이 있을 때, 이 집합의 공집합이 아닌 부분집합 중에서 그 집합의 원소를 다 더한 값이 S가 되는 경우의 수를 구하는 프로그램을 작성하시오.
+#if 0
+#include <stdio.h>
+int cnt;
+int N;
+int S;
+int ar[30];
+
+void input(void)
+{
+	int i;
+	scanf("%d %d", &N, &S);
+	for (i = 1; i <= N; i++) scanf("%d", &ar[i]);
+}
+
+void DFS(int n,int sum)
+{
+	if (n >= N)
+	{
+		if (sum == S) cnt++;
+		return;
+	}
+	DFS(n + 1, sum + ar[n+1]);
+	DFS(n + 1, sum);
+
+}
+
+int main(void)
+{
+	input();
+	DFS(0,0);
+	if (!S) cnt--;
+	printf("%d", cnt);
+}
+
+#endif // 01
+
+//점심 식사시간 (sw expert)
+#if 0
+#include <stdio.h>
+#include <string.h>
+#define ABS(x) ((x)>0?(x):-(x))
+#define MIN(x,y) ((x)>(y)?(y):(x))
+int T;
+int N;
+int mat[12][12];
+int stair[2][3];
+int stair_pos[2][2];
+int rp[2];
+int wp[2];
+int per_que[2][10];
+int tmp[2][10];
+int person[11][2];
+int st[2];
+int num;
+int cnt;
+int cnt2;
+int min = 0x7f000000;
+int time;
+
+int input(void)
+{
+	int i, j;
+	memset(mat, 0, sizeof(mat));
+	memset(person, 0, sizeof(person));
+	memset(tmp, 0, sizeof(tmp));
+	cnt = 0;
+	rp[0] = rp[1] = 0;
+	wp[0] = wp[1] = 0;
+	min = 0x7f000000;
+	num = 0;
+	scanf("%d", &N);
+	for (i = 1; i <= N; i++)
+	{
+		for (j = 1; j <= N; j++)
+		{
+			scanf("%d", &mat[i][j]);
+			if (mat[i][j] == 1)
+			{
+				num++;
+				person[cnt2][0] = i, person[cnt2++][1] = j;
+			}
+			else if (mat[i][j] > 1)
+			{
+				stair_pos[cnt][0] = i, stair_pos[cnt][1] = j;
+				st[cnt++] = mat[i][j];
+			}
+		}
+	}
+	cnt = 0;
+	cnt2 = 0;
+}
+
+void sort()
+{
+	int i, j;
+	memcpy(per_que, tmp, sizeof(tmp));
+	for (i = 0; i < wp[0] - 1; i++)
+	{
+		for (j = i + 1; j < wp[0]; j++)
+		{
+			if (per_que[0][i] > per_que[0][j])
+			{
+				int tmp = per_que[0][i];
+				per_que[0][i] = per_que[0][j];
+				per_que[0][j] = tmp;
+			}
+		}
+	}
+	for (i = 0; i < wp[0] - 1; i++)
+	{
+		for (j = i + 1; j < wp[1]; j++)
+		{
+			if (per_que[1][i] > per_que[1][j])
+			{
+				int tmp = per_que[1][i];
+				per_que[1][i] = per_que[1][j];
+				per_que[1][j] = tmp;
+			}
+		}
+	}
+}
+
+
+int solve(void)
+{
+	int i, j;
+	int time, ans=0;
+	rp[0] = rp[1] = 0;
+	sort();
+	for (time = 1; ans < num; time++)
+	{
+		for (i = 0; i < 2; i++)
+		{
+			for (j = 0; j < 3; j++)
+			{
+				if (stair[i][j]>0)
+				{
+					if (--stair[i][j] == 0)
+					{
+						ans++;
+						if (ans == num) return time;
+					}
+				}
+				if (stair[i][j] == 0)
+				{
+					if (rp[i]<wp[i] && time > per_que[i][rp[i]])
+					{
+						stair[i][j] = st[i];
+						rp[i]++;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void DFS(int n)
+{
+	int abs1, abs2;
+	if (n >= num)
+	{
+		cnt=solve();
+		if (cnt < min) min = cnt;
+		return;
+	}
+	
+	abs1 = ABS(person[n][0] - stair_pos[0][0]) + ABS(person[n][1] - stair_pos[0][1]);
+	abs2 = ABS(person[n][0] - stair_pos[1][0]) + ABS(person[n][1] - stair_pos[1][1]);
+	
+	tmp[0][wp[0]++] = abs1;
+	DFS(n + 1);
+	tmp[0][wp[0]--] = 0;
+
+	tmp[1][wp[1]++] = abs2;
+	DFS(n + 1);
+	tmp[1][wp[1]--] = 0;
+}
+
+int main(void)
+{
+	int i=1;
+	scanf("%d", &T);
+	while (T--)
+	{
+		input();
+		DFS(0);
+		printf("#%d %d\n",i++, min);
+	}
+	return 0;
+}
+#endif // 01
+
+//카드게임
+/*지훈이는 최근에 혼자 하는 카드게임을 즐겨하고 있다. 게임에 사용하는 각 카드에는 양의 정수 하나가 적혀있고 같은 숫자가 적힌 카드는 여러 장 있을 수 있다. 게임방법은 우선 짝수개의 카드를 무작위로 섞은 뒤 같은 개수의 두 더미로 나누어 하나는 왼쪽에 다른 하나는 오른쪽에 둔다. 그리고 빈 통을 하나 준비한다.
+이제 각 더미의 제일 위에 있는 카드끼리 서로 비교하며 게임을 한다.
+게임 규칙은 다음과 같다.
+지금부터 왼쪽 더미의 제일 위 카드를 왼쪽 카드로, 오른쪽 더미의 제일 위 카드를 오른쪽 카드로 부르겠다.
+(1) 언제든지 왼쪽 카드만 통에 버릴 수도 있고 왼쪽 카드와 오른쪽 카드를 둘 다 통에 버릴 수도 있다. 이때 얻는 점수는 없다.
+(2) 오른쪽 카드에 적힌 수가 왼쪽 카드에 적힌 수보다 작은 경우에는 오른쪽 카드만 통에 버릴 수도 있다. 오른쪽 카드만 버리는 경우에는 오른쪽 카드에 적힌 수만큼 점수를 얻는다.
+(3) (1)과 (2)의 규칙에 따라 게임을 진행하다가 어느 쪽 더미든 남은 카드가 없다면 게임이 끝나며 그때까지 얻은 점수의 합이 최종 점수가 된다.
+다음 예는 세 장 씩 두 더미의 카드를 가지고 게임을 시작하는 경우이다.*/
+#if 0
+#include <stdio.h>
+#include <string.h>
+#define MAX(x,y) ((x)>(y)?(x):(y))
+int T;
+int N;
+int left[30], right[30];
+int D[30][30];
+int max;
+int max_left;
+
+void input(void)
+{
+	int i;
+	scanf("%d", &N);
+	memset(left, 0, sizeof(left));
+	memset(right, 0, sizeof(right));
+	max = 0;
+	for (i = 0; i < N; i++)
+	{
+		scanf("%d", &left[i]);
+		max_left = MAX(left[i], max_left);
+	}
+	for (i = 0; i < N; i++) scanf("%d", &right[i]);
+}
+
+void DFS(int le, int ri, int total)
+{
+	if (D[le][ri] >= total) return;
+	D[le][ri] = total;
+
+	if (le>=N || ri>=N)
+	{
+		max = MAX(max, total);
+		return;
+	}
+
+	if (left[le] > right[ri]) DFS(le, ri + 1, total + right[ri]);
+	else
+	{
+		DFS(le + 1, ri + 1, total);
+		DFS(le + 1, ri, total);
+	}
+}
+
+
+
+int main(void)
+{
+	int i, j;
+	scanf("%d", &T);
+	while (T--)
+	{
+		memset(D, 0xff, sizeof(D));
+		input();
+		DFS(0, 0, 0);
+		printf("%d\n", max);
+	}
+}
+
+#endif // 01
+
+//불켜기
+/*농부 존은 최근에 N*N개의 방이 있는 거대한 헛간을 새로 지었다. 각 방은 (1, 1)부터 (N,N)까지 번호가 매겨져있다(2≤N≤100). 어둠을 무서워하는 암소 베시는 최대한 많은 방에 불을 밝히고 싶어한다.
+베시는 유일하게 불이 켜져있는 방인 (1,1)방에서 출발한다. 어떤 방에는 다른 방의 불을 끄고 켤 수 있는 스위치가 달려있다. 예를 들어, (1, 1)방에 있는 스위치로 (1, 2)방의 불을 끄고 켤 수 있다. 베시는 불이 켜져있는 방으로만 들어갈 수 있고, 각 방에서는 상하좌우에 인접한 방으로 움직일 수 있다.
+ 베시가 불을 켤 수 있는 방의 최대 갯수를 구하시오.*/
+#if 0
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int T;
+int N, M;
+typedef struct
+{
+	int x, y, a, b;
+}POS;
+POS pos[20010];
+typedef struct
+{
+	int x, y;
+}Q_t;
+Q_t Q[10010];
+int wp, rp;
+int light[110][110];
+int ind[110][110];
+int dirow[4] = { -1, 1, 0, 0 };
+int dicol[4] = { 0, 0, -1, 1 };
+int cnt;
+int chk[110][110];
+int update;
+
+
+int cmp(const void *p, const void *q);
+void input(void)
+{
+	int i;
+	cnt = 1;
+	memset(pos, 0, sizeof(pos));
+	memset(ind, -1, sizeof(ind));
+	memset(light , 0, sizeof(light));
+	scanf("%d %d", &N, &M);
+	for (i = 0; i < M; i++)
+	{
+		scanf("%d %d %d %d", &pos[i].x, &pos[i].y, &pos[i].a, &pos[i].b);
+	}
+	qsort(pos, M, sizeof(POS), cmp);
+	for (i = 0; i < M; i++)
+	{
+		if ((pos[i].x != pos[i + 1].x) || (pos[i].y != pos[i + 1].y))
+			ind[pos[i + 1].x][pos[i + 1].y] = i + 1;
+	}
+	ind[1][1] = 0;
+}
+
+int cmp(const void *pp, const void *qq)
+{
+	POS * p;
+	POS * q;
+	p = (POS *)pp, q = (POS *)qq;
+	if (p->x == q->x) return p->y - q->y;
+	return p->x - q->x;
+}
+
+void light_on(int i, int j)
+{
+	int k, tmp = cnt;
+	if (ind[i][j]<0) return;
+	for (k = ind[i][j]; pos[k].x == i && pos[k].y == j; k++)
+	{
+		if (!light[pos[k].a][pos[k].b])
+		{
+			light[pos[k].a][pos[k].b] = 1;
+			cnt++;
+			update = 1;
+		}
+	}
+	return;
+}
+
+void BFS(void)
+{
+	int ni, nj, k;
+	Q_t tmp;
+	Q[wp].x = 1, Q[wp++].y = 1, light[1][1] = 1;
+	while (rp < wp)
+	{
+		tmp = Q[rp++];
+		light_on(tmp.x, tmp.y);
+		for (k = 0; k < 4; k++)
+		{
+			ni = tmp.x + dirow[k];
+			nj = tmp.y + dicol[k];
+			if (ni<1 || ni>N || nj<1 || nj>N) continue;
+			if (chk[ni][nj]) continue;
+			if (!light[ni][nj]) continue;
+			Q[wp].x = ni, Q[wp++].y = nj, chk[ni][nj] = 1;
+		}
+	}
+}
+
+
+int main(void)
+{
+	scanf("%d", &T);
+	while (T--)
+	{
+		input();
+		do
+		{
+			memset(chk, 0, sizeof(chk));
+			update = 0;
+			rp = wp = 0;
+			BFS();
+		} while (update);
+		printf("%d\n", cnt);
+	}
+	return 0;
+}
+#endif // 01
+
+//차량 정비소
+#if 0
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+int T;
+int N, M, K, A, B;
+int time;
+int recept_time[22];
+int repair_time[22];
+int customer[1010];
+int total;
+int sol;
+typedef struct
+{
+	int num,recept,t;
+}DESK;
+DESK recept[22];
+DESK repair[22];
+typedef struct
+{
+	int num, recept;
+}WAIT;
+WAIT wait[10000];
+int wp_cus, wp_wait;
+int rp_cus, rp_wait;
+
+int cmp(const void * pp,const void * qq)
+{
+	int *p;
+	int *q;
+	p = (int *)pp, q = (int *)qq;
+	return *p - *q;
+}
+
+void input(void)
+{
+	int i, j;
+	memset(recept, 0, sizeof(recept));
+	memset(repair, 0, sizeof(repair));
+	memset(customer, 0, sizeof(customer));
+	memset(wait, 0, sizeof(wait));
+	wp_cus = 1, wp_wait = 1;
+	rp_cus = 1, rp_wait = 1;
+	total = sol = 0;
+	scanf("%d %d %d %d %d", &N, &M, &K, &A, &B);
+	for (i = 1; i <= N; i++) scanf("%d", &recept_time[i]);
+	for (i = 1; i <= M; i++) scanf("%d", &repair_time[i]);
+	for (i = 1; i <= K; i++) 
+		scanf("%d", &customer[i]);
+	qsort(customer, K + 1, sizeof(int), cmp);
+}
+
+void solve(void)
+{
+	int i, j;
+	for (time = customer[1]; total < K; time++)
+	{
+		for (i = 1; i <= N; i++)
+		{
+			if (recept[i].t > 0)
+			{
+				if (--recept[i].t == 0)
+				{
+					wait[wp_wait].num = recept[i].num;
+					wait[wp_wait++].recept = i;
+				}
+			}
+			if (recept[i].t == 0)
+			{
+				if (rp_cus < K+1 && customer[rp_cus] <= time)
+				{
+					recept[i].num = rp_cus++;
+					recept[i].t = recept_time[i];
+				}
+			}
+		}
+		for (i = 1; i <= M; i++)
+		{
+			if (repair[i].t>0)
+			{
+				if (--repair[i].t == 0)
+				{
+					total++;
+					if (i == B && repair[i].recept == A) sol+=repair[i].num;
+				}
+			}
+			if (repair[i].t == 0)
+			{
+				if (rp_wait < wp_wait)
+				{
+					repair[i].num = wait[rp_wait].num;
+					repair[i].t = repair_time[i];
+					repair[i].recept = wait[rp_wait++].recept;
+				}
+			}
+		}
+	}
+}
+
+
+
+int main(void)
+{
+	int i=1;
+	scanf("%d", &T);
+	while (T--)
+	{
+		input();
+		solve();
+		if (!sol) printf("#%d -1\n",i++);
+		else printf("#%d %d\n",i++, sol);
+	}
+	return 0;
+}
+#endif // 01
+
+//벌꿀채취
+#if 01
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#define MAX(x,y) ((x)>(y)?(x):(y))
+int T;
+int M, N;
+int C;
+int honey[2][5];
+int mat[12][12];
+int chk[12][12];
+int sol;
+
+void input(void)
+{
+	int i, j;
+	memset(mat, 0, sizeof(mat));
+	memset(honey, 0, sizeof(honey));
+	scanf("%d %d %d", &N, &M, &C);
+	for (i = 1; i <= N; i++)
+	{
+		for (j = 1; j <= N; j++) scanf("%d", &mat[i][j]);
+	}
+}
+
+int check(int i,int j)
+{
+	int k;
+	for (k = 0; k < M; k++)
+	{
+		if (chk[i][j + k]) return 1;
+		if (j + k > N) return 1;
+	}
+	return 0;
+}
+
+int get_honey()
+{
+
+}
+
+void DFS(int n,int s,int e)
+{
+	int i, j, k;
+	if (n >= 2)
+	{
+		sol = MAX(sol, get_honey());
+	}
+
+	for (i = s; i <= N; i++)
+	{
+		for (j = 1; j <= N - M + 1; j++)
+		{
+			if (i == s) while (j <= e){ j++; };
+			if (check(i,j)) continue;
+			for (k = 0; k < M; k++) chk[i][j + k] = 1;
+			DFS(n + 1,i,j);
+			for (k = 0; k < M; k++) chk[i][j + k] = 0;
+		}
+	}
+}
+
+int main(void)
+{
+	int i;
+	scanf("%d", &T);
+	while (T--)
+	{
+		input();
+		DFS(0,1,0);
+		printf("#%d %d", i++, sol);
+	}
+}
+#endif // 01
