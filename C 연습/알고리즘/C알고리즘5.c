@@ -2289,17 +2289,18 @@ int check(int i,int j)
 	return 0;
 }
 
-int get_honey()
+int get_honey(int i, int j, int n)
 {
+
 
 }
 
-void DFS(int n,int s,int e)
+void DFS(int n,int s,int e,int total)
 {
-	int i, j, k;
+	int i, j, k, sum;
 	if (n >= 2)
 	{
-		sol = MAX(sol, get_honey());
+		sol = MAX(sol, total);
 	}
 
 	for (i = s; i <= N; i++)
@@ -2309,7 +2310,7 @@ void DFS(int n,int s,int e)
 			if (i == s) while (j <= e){ j++; };
 			if (check(i,j)) continue;
 			for (k = 0; k < M; k++) chk[i][j + k] = 1;
-			DFS(n + 1,i,j);
+			DFS(n + 1,i,j,total+get_honey(i,j,0));
 			for (k = 0; k < M; k++) chk[i][j + k] = 0;
 		}
 	}
