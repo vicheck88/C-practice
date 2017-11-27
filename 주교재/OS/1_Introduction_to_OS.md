@@ -90,3 +90,10 @@
 
 2. Protection
 	- OS는 여러 종류의 애플리케이션들로부터 시스템을 보호하는 역할 수행
+3. Illusion
+	- 하드웨어에 제한을 둠
+	- 애플리케이션 자신이 모든 메모리, 프로세서 자원을 사용한다고 생각하게 만듦
+4. Coordination and Optimization
+	- 여러 애플리케이션들이 효율적으로 동작하도록 제어
+	- Concurrency
+	- Efficiency
